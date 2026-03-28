@@ -5,7 +5,7 @@ After=network-online.target reclaim-rpc.service
 [Service]
 Type=oneshot
 WorkingDirectory=/root/reclaim-fi
-EnvironmentFile=/opt/mev/.env
+EnvironmentFile=/root/reclaim-fi/.env
 ExecStart=/root/reclaim-fi/venv/bin/python rebate_service.py
 StandardOutput=journal
 StandardError=journal

@@ -26,7 +26,7 @@ import database as db
 # ---------------------------------------------------------------------------
 
 GETH_RPC = os.getenv("GETH_RPC", "http://localhost:8645")
-PRIVATE_KEY = os.getenv("DEPLOYER_PRIVATE_KEY", "")
+PRIVATE_KEY = os.getenv("RECLAIM_DEPLOYER_KEY", "")
 CONTRACT_ADDRESS = "0x679681d25Dc0293e671415E4372EEc3ceac73503"
 MAX_BATCH_SIZE = 50        # max users per batchDistribute call
 MIN_BATCH_WEI = 10**15     # 0.001 ETH — don't send tx for dust amounts
@@ -111,7 +111,7 @@ def check_gas_price(w3: Web3) -> bool:
 async def distribute_rebates():
     """Main distribution flow: read pending → batch → send on-chain."""
     if not PRIVATE_KEY:
-        log.error("DEPLOYER_PRIVATE_KEY not set — cannot distribute")
+        log.error("RECLAIM_DEPLOYER_KEY not set — cannot distribute")
         return
 
     await db.init(DB_PATH)

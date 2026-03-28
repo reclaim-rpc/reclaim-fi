@@ -127,6 +127,13 @@ async def lifespan(app: FastAPI):
         if key in saved:
             stats[key] = int(saved[key])
 
+    # Seed active_users from DB so /stats never shows 0 after restart
+    try:
+        db_user_count = await db.get_user_count()
+        log.info(f"Loaded {db_user_count} users from database")
+    except Exception:
+        pass
+
     log.info("Reclaim RPC proxy started — listening on :8550")
     log.info(f"Backend: {GETH_RPC} | Protect: {FLASHBOTS_PROTECT}")
 
@@ -355,9 +362,11 @@ async def handle_protected_tx(data: dict, params: list, request_id) -> JSONRespo
     tx = decode_raw_tx(raw_tx)
     is_swap = tx is not None and is_swap_tx(tx)
 
-    # Track user in database (non-blocking)
+    # Track user + log transaction in database (non-blocking)
     if sender:
         asyncio.create_task(_track_user_safe(sender, is_swap))
+        selector = tx.get("data", "0x")[2:10] if tx and len(tx.get("data", "0x")) >= 10 else ""
+        asyncio.create_task(_log_tx_safe(sender, raw_tx[:12] if raw_tx else None, selector))
 
     if is_swap:
         # Check for backrun opportunity
@@ -388,6 +397,19 @@ async def _track_user_safe(sender: str, is_swap: bool):
         await db.track_user(sender, is_swap)
     except Exception as e:
         log.warning(f"DB track_user failed: {e}")
+
+
+async def _log_tx_safe(sender: str, tx_hash: str | None, method: str):
+    """Log transaction in DB, fire-and-forget."""
+    try:
+        await db.log_transaction(
+            user_address=sender,
+            tx_hash=tx_hash,
+            method=method or "eth_sendRawTransaction",
+            routed_via="flashbots_protect",
+        )
+    except Exception as e:
+        log.warning(f"DB log_transaction failed: {e}")
 
 
 # ---------------------------------------------------------------------------

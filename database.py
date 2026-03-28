@@ -43,9 +43,23 @@ CREATE TABLE IF NOT EXISTS global_stats (
     value TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp REAL NOT NULL,
+    user_address TEXT NOT NULL,
+    tx_hash TEXT,
+    method TEXT NOT NULL,
+    routed_via TEXT DEFAULT 'flashbots_protect',
+    mev_captured_wei INTEGER DEFAULT 0,
+    rebate_amount_wei INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_rebates_status ON pending_rebates(status);
 CREATE INDEX IF NOT EXISTS idx_rebates_user ON pending_rebates(user_address);
 CREATE INDEX IF NOT EXISTS idx_users_last_seen ON users(last_seen);
+CREATE INDEX IF NOT EXISTS idx_tx_user ON transactions(user_address);
+CREATE INDEX IF NOT EXISTS idx_tx_timestamp ON transactions(timestamp);
 """
 
 # ---------------------------------------------------------------------------
@@ -95,6 +109,45 @@ async def track_user(address: str, is_swap: bool = False):
         (address, now, now, 1 if is_swap else 0, now, 1 if is_swap else 0),
     )
     await _db.commit()
+
+
+async def log_transaction(
+    user_address: str,
+    tx_hash: str | None,
+    method: str,
+    routed_via: str = "flashbots_protect",
+    mev_captured_wei: int = 0,
+    rebate_amount_wei: int = 0,
+):
+    """Log a protected transaction. Fire-and-forget safe."""
+    await _db.execute(
+        """
+        INSERT INTO transactions
+            (timestamp, user_address, tx_hash, method, routed_via,
+             mev_captured_wei, rebate_amount_wei)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            time.time(),
+            user_address.lower(),
+            tx_hash,
+            method,
+            routed_via,
+            mev_captured_wei,
+            rebate_amount_wei,
+        ),
+    )
+    await _db.commit()
+
+
+async def get_tx_count_for_user(address: str) -> int:
+    """Count transactions for a specific user."""
+    r = await _db.execute(
+        "SELECT COUNT(*) as cnt FROM transactions WHERE user_address = ?",
+        (address.lower(),),
+    )
+    row = await r.fetchone()
+    return row["cnt"]
 
 
 async def register_referral(user: str, referrer: str) -> bool:
