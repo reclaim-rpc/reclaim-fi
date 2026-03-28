@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 
-const REBATE_CONTRACT = '0xC8A827b42842FA838aa266aCe85E1Bc9e2eeCE58';
+const REBATE_CONTRACT = '0x679681d25Dc0293e671415E4372EEc3ceac73503';
 const RPC_URL = 'https://rpc.reclaimfi.xyz';
 const SITE_URL = 'https://reclaimfi.xyz';
 

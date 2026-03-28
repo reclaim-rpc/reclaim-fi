@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: reclaim-n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    volumes:
+      - /root/reclaim-fi/n8n/data:/home/node/.n8n
+    environment:
+      - GENERIC_TIMEZONE=UTC
+      - TZ=UTC
+      - N8N_METRICS=true
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=reclaim-admin
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-changeme}
+      - WEBHOOK_URL=http://135.181.61.221:5678/
+      - N8N_HOST=135.181.61.221
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docs - Reclaim | MEV-Protected Ethereum RPC</title>
+  <meta name="description" content="Technical documentation for Reclaim Fi. API reference, FAQ, architecture details, and integration guide for MEV-protected Ethereum RPC.">
+  <meta property="og:title" content="Reclaim Docs - MEV-Protected Ethereum RPC">
+  <meta property="og:description" content="API reference, FAQ, and technical docs for the Reclaim MEV-protected RPC service.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://reclaimfi.xyz/docs.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Reclaim Docs - MEV-Protected Ethereum RPC">
+  <meta name="twitter:description" content="API reference, FAQ, and technical docs for Reclaim.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0b0f;
+      --bg-card: #1a1b23;
+      --bg-surface: #14151a;
+      --accent: #00ff88;
+      --accent-dim: #00cc6a;
+      --teal: #0ea5e9;
+      --text: #ffffff;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --border: rgba(42, 43, 51, 0.5);
+      --border-accent: rgba(0, 255, 136, 0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ::selection { background: rgba(0, 255, 136, 0.2); color: #fff; }
+
+    a { color: var(--accent); text-decoration: none; transition: opacity 0.2s; }
+    a:hover { opacity: 0.85; }
+
+    code, .mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #2a2b33; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3b43; }
+
+    /* ---- Navbar ---- */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(10, 11, 15, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 1.5rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 1.25rem; font-weight: 700; color: var(--text);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a {
+      font-size: 0.875rem; color: var(--text-secondary);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); opacity: 1; }
+    .nav-links a.active { color: var(--accent); }
+
+    /* ---- Layout ---- */
+    .page { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+    .page-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 3rem;
+      padding-top: 96px;
+      padding-bottom: 4rem;
+      min-height: 100vh;
+    }
+
+    /* ---- Sidebar ---- */
+    .sidebar {
+      position: sticky; top: 96px; align-self: start;
+      max-height: calc(100vh - 120px); overflow-y: auto;
+    }
+    .sidebar-section { margin-bottom: 1.5rem; }
+    .sidebar-title {
+      font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-muted); margin-bottom: 0.5rem;
+    }
+    .sidebar a {
+      display: block; padding: 0.3rem 0;
+      font-size: 0.85rem; color: var(--text-secondary);
+      transition: color 0.2s; text-decoration: none;
+    }
+    .sidebar a:hover { color: var(--text); opacity: 1; }
+
+    /* ---- Content ---- */
+    .content { min-width: 0; }
+
+    .content h1 {
+      font-size: 2.5rem; font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, var(--accent) 50%, var(--teal) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .content .subtitle {
+      font-size: 1.1rem; color: var(--text-secondary);
+      margin-bottom: 3rem;
+    }
+
+    .content h2 {
+      font-size: 1.6rem; font-weight: 700;
+      margin-top: 3.5rem; margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .content h3 {
+      font-size: 1.15rem; font-weight: 600;
+      margin-top: 2rem; margin-bottom: 0.75rem;
+      color: var(--accent);
+    }
+    .content p { margin-bottom: 1rem; color: var(--text-secondary); }
+    .content ul, .content ol {
+      margin-bottom: 1rem; padding-left: 1.5rem;
+      color: var(--text-secondary);
+    }
+    .content li { margin-bottom: 0.4rem; }
+
+    /* ---- Code blocks ---- */
+    .code-block {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: var(--text-secondary);
+    }
+    .code-block .key { color: var(--teal); }
+    .code-block .str { color: var(--accent); }
+    .code-block .num { color: #f59e0b; }
+    .code-block .comment { color: var(--text-muted); font-style: italic; }
+    .code-block .method { color: #c084fc; font-weight: 600; }
+
+    .inline-code {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      padding: 0.15rem 0.45rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82em;
+      color: var(--accent);
+    }
+
+    /* ---- Endpoint card ---- */
+    .endpoint {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.3s;
+    }
+    .endpoint:hover { border-color: var(--border-accent); }
+    .endpoint-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .endpoint-method {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 0.375rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; font-weight: 600;
+      text-transform: uppercase;
+    }
+    .method-post { background: rgba(139, 92, 246, 0.15); color: #c084fc; }
+    .method-get { background: rgba(0, 255, 136, 0.1); color: var(--accent); }
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem; font-weight: 600;
+    }
+    .endpoint-desc { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; }
+
+    /* ---- FAQ ---- */
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .faq-item:hover { border-color: var(--border-accent); }
+    .faq-q {
+      padding: 1.25rem 1.5rem;
+      font-weight: 600; font-size: 0.95rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between;
+      user-select: none;
+    }
+    .faq-q::after {
+      content: '+';
+      font-size: 1.25rem; font-weight: 300;
+      color: var(--accent);
+      transition: transform 0.2s;
+    }
+    .faq-item.open .faq-q::after {
+      content: '-';
+    }
+    .faq-a {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+    }
+    .faq-item.open .faq-a {
+      max-height: 500px;
+    }
+    .faq-a-inner {
+      padding: 0 1.5rem 1.25rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+
+    /* ---- Architecture diagram ---- */
+    .arch-diagram {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      white-space: pre;
+      color: var(--text-secondary);
+    }
+
+    /* ---- Table ---- */
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+    }
+    .doc-table th {
+      text-align: left; padding: 0.75rem 1rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-weight: 600; font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .doc-table td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .doc-table tr:hover td { background: rgba(26, 27, 35, 0.5); }
+
+    /* ---- Tag/badge ---- */
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.7rem; font-weight: 500;
+      background: rgba(0, 255, 136, 0.08);
+      color: var(--accent);
+      border: 1px solid rgba(0, 255, 136, 0.15);
+    }
+
+    /* ---- Footer ---- */
+    .footer {
+      border-top: 1px solid rgba(42, 43, 51, 0.3);
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .footer a { color: var(--text-secondary); }
+    .footer a:hover { color: var(--accent); }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 768px) {
+      .page-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .sidebar {
+        position: static;
+        display: flex; flex-wrap: wrap; gap: 0.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+        max-height: none;
+      }
+      .sidebar-section { margin-bottom: 0; }
+      .sidebar-title { display: none; }
+      .sidebar a {
+        padding: 0.35rem 0.75rem;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 0.78rem;
+      }
+      .content h1 { font-size: 1.75rem; }
+      .content h2 { font-size: 1.3rem; }
+      .nav-links { gap: 1rem; }
+      .arch-diagram { font-size: 0.65rem; padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#00ff88" stroke-width="2" fill="none"/>
+          <path d="M16 6 L22 14 L16 26 L10 14 Z" fill="#00ff88" opacity="0.3"/>
+          <path d="M16 8 L20 14 L16 24 L12 14 Z" stroke="#00ff88" stroke-width="1.5" fill="none"/>
+        </svg>
+        Reclaim
+      </a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#how-it-works">How It Works</a>
+        <a href="/#live-stats">Stats</a>
+        <a href="/#setup">Setup</a>
+        <a href="/docs.html" class="active">Docs</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== MAIN ===== -->
+  <div class="page">
+    <div class="page-grid">
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-title">API Reference</div>
+          <a href="#rpc-proxy">JSON-RPC Proxy</a>
+          <a href="#stats-endpoint">GET /stats</a>
+          <a href="#health-endpoint">GET /health</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-title">FAQ</div>
+          <a href="#faq">Frequently Asked</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-title">Technical</div>
+          <a href="#architecture">Architecture</a>
+          <a href="#dex-routers">DEX Routers</a>
+          <a href="#contract">Smart Contract</a>
+          <a href="#rebate-schedule">Rebate Schedule</a>
+        </div>
+      </aside>
+
+      <!-- Content -->
+      <main class="content">
+        <h1>Documentation</h1>
+        <p class="subtitle">Everything you need to integrate with Reclaim's MEV-protected Ethereum RPC.</p>
+
+        <!-- ============================================================ -->
+        <!-- API REFERENCE                                                 -->
+        <!-- ============================================================ -->
+
+        <h2 id="rpc-proxy">JSON-RPC Proxy</h2>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-post">POST</span>
+            <span class="endpoint-path">/</span>
+          </div>
+          <p class="endpoint-desc">
+            Standard Ethereum JSON-RPC endpoint. Proxies all methods to a local Geth node, except
+            <code class="inline-code">eth_sendRawTransaction</code> which is routed through
+            Flashbots Protect for sandwich attack prevention.
+          </p>
+
+          <h3>Base URL</h3>
+<div class="code-block">https://rpc.reclaimfi.xyz</div>
+
+          <h3>Request</h3>
+          <p>Standard JSON-RPC 2.0 format. Single requests and batch arrays are both supported.</p>
+<div class="code-block"><span class="comment">// Example: get latest block number</span>
+{
+  <span class="key">"jsonrpc"</span>: <span class="str">"2.0"</span>,
+  <span class="key">"method"</span>:  <span class="str">"eth_blockNumber"</span>,
+  <span class="key">"params"</span>:  [],
+  <span class="key">"id"</span>:      <span class="num">1</span>
+}</div>
+
+          <h3>Response</h3>
+<div class="code-block">{
+  <span class="key">"jsonrpc"</span>: <span class="str">"2.0"</span>,
+  <span class="key">"result"</span>:  <span class="str">"0x134a7b2"</span>,
+  <span class="key">"id"</span>:      <span class="num">1</span>
+}</div>
+
+          <h3>Supported Methods</h3>
+          <p>All standard Ethereum JSON-RPC methods are proxied, including:</p>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Category</th><th>Methods</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Block</td>
+                <td><code class="inline-code">eth_blockNumber</code>, <code class="inline-code">eth_getBlockByNumber</code>, <code class="inline-code">eth_getBlockByHash</code></td>
+              </tr>
+              <tr>
+                <td>Transaction</td>
+                <td><code class="inline-code">eth_sendRawTransaction</code> <span class="tag">MEV Protected</span>, <code class="inline-code">eth_getTransactionByHash</code>, <code class="inline-code">eth_getTransactionReceipt</code></td>
+              </tr>
+              <tr>
+                <td>State</td>
+                <td><code class="inline-code">eth_getBalance</code>, <code class="inline-code">eth_getCode</code>, <code class="inline-code">eth_getStorageAt</code>, <code class="inline-code">eth_call</code></td>
+              </tr>
+              <tr>
+                <td>Gas</td>
+                <td><code class="inline-code">eth_gasPrice</code>, <code class="inline-code">eth_estimateGas</code>, <code class="inline-code">eth_feeHistory</code>, <code class="inline-code">eth_maxPriorityFeePerGas</code></td>
+              </tr>
+              <tr>
+                <td>Logs</td>
+                <td><code class="inline-code">eth_getLogs</code>, <code class="inline-code">eth_getFilterChanges</code>, <code class="inline-code">eth_newFilter</code></td>
+              </tr>
+              <tr>
+                <td>Chain</td>
+                <td><code class="inline-code">eth_chainId</code>, <code class="inline-code">net_version</code>, <code class="inline-code">web3_clientVersion</code></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Error Codes</h3>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Code</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code class="inline-code">-32700</code></td><td>Parse error -- invalid JSON</td></tr>
+              <tr><td><code class="inline-code">-32602</code></td><td>Invalid params (e.g. missing raw tx)</td></tr>
+              <tr><td><code class="inline-code">-32603</code></td><td>Backend error -- Geth unreachable or internal failure</td></tr>
+              <tr><td>HTTP 502</td><td>Backend connection error</td></tr>
+              <tr><td>HTTP 504</td><td>Backend timeout (30s limit)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- /stats -->
+        <h2 id="stats-endpoint">GET /stats</h2>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-path">/stats</span>
+          </div>
+          <p class="endpoint-desc">
+            Public statistics endpoint. Returns live metrics about the RPC service. No authentication required.
+          </p>
+
+          <h3>Request</h3>
+<div class="code-block"><span class="method">GET</span> https://rpc.reclaimfi.xyz/stats</div>
+
+          <h3>Response Schema</h3>
+<div class="code-block">{
+  <span class="key">"total_requests"</span>:          <span class="num">184729</span>,          <span class="comment">// Total JSON-RPC requests served</span>
+  <span class="key">"total_txs_protected"</span>:      <span class="num">3421</span>,            <span class="comment">// Transactions routed via Flashbots Protect</span>
+  <span class="key">"total_swaps_detected"</span>:     <span class="num">1893</span>,            <span class="comment">// DEX swaps identified by calldata selector</span>
+  <span class="key">"total_backruns_attempted"</span>: <span class="num">47</span>,              <span class="comment">// Backrun bundles submitted</span>
+  <span class="key">"total_mev_captured_eth"</span>:   <span class="num">1.284</span>,           <span class="comment">// Total MEV value captured (ETH)</span>
+  <span class="key">"total_rebates_paid_eth"</span>:   <span class="num">1.027</span>,           <span class="comment">// Total rebates distributed (ETH)</span>
+  <span class="key">"active_users"</span>:             <span class="num">156</span>,             <span class="comment">// Unique sender addresses seen</span>
+  <span class="key">"uptime_seconds"</span>:           <span class="num">864000</span>,          <span class="comment">// Seconds since last restart</span>
+  <span class="key">"top_methods"</span>: {                             <span class="comment">// Top 10 RPC methods by call count</span>
+    <span class="key">"eth_call"</span>:                <span class="num">92341</span>,
+    <span class="key">"eth_getBalance"</span>:          <span class="num">34201</span>,
+    <span class="key">"eth_blockNumber"</span>:         <span class="num">28447</span>,
+    <span class="key">"eth_sendRawTransaction"</span>:  <span class="num">3421</span>
+  }
+}</div>
+        </div>
+
+        <!-- /health -->
+        <h2 id="health-endpoint">GET /health</h2>
+
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-path">/health</span>
+          </div>
+          <p class="endpoint-desc">
+            Health check endpoint. Verifies the proxy is running and the Geth backend is reachable and synced.
+            Returns HTTP 200 when healthy, HTTP 503 when degraded.
+          </p>
+
+          <h3>Response Schema</h3>
+<div class="code-block">{
+  <span class="key">"status"</span>:          <span class="str">"healthy"</span>,     <span class="comment">// "healthy" or "degraded"</span>
+  <span class="key">"geth_connected"</span>:  <span class="num">true</span>,          <span class="comment">// Whether Geth backend responded</span>
+  <span class="key">"geth_block"</span>:      <span class="num">20148291</span>,      <span class="comment">// Latest block number from Geth</span>
+  <span class="key">"uptime_seconds"</span>:  <span class="num">864000</span>,        <span class="comment">// Proxy uptime</span>
+  <span class="key">"version"</span>:         <span class="str">"0.1.0"</span>        <span class="comment">// Proxy version</span>
+}</div>
+
+          <h3>Status Codes</h3>
+          <table class="doc-table">
+            <thead>
+              <tr><th>HTTP Code</th><th>Status Field</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>200</td><td><code class="inline-code">healthy</code></td><td>Proxy running, Geth connected and synced</td></tr>
+              <tr><td>503</td><td><code class="inline-code">degraded</code></td><td>Proxy running, but Geth unreachable or not synced</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- FAQ                                                           -->
+        <!-- ============================================================ -->
+
+        <h2 id="faq">Frequently Asked Questions</h2>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What is MEV?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            MEV (Maximal Extractable Value) is the profit that block builders and searchers extract from ordinary users by reordering, inserting, or censoring transactions within a block. The most common form is the <strong>sandwich attack</strong>: a bot sees your DEX swap in the public mempool, places a buy order before yours (front-run) to push the price up, lets your trade execute at the worse price, then sells after (back-run) to pocket the difference. On Ethereum, MEV extraction costs users an estimated $500M+ per year.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How does Reclaim protect my transactions?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            When you send a transaction through Reclaim, we route it via <a href="https://docs.flashbots.net/flashbots-protect/overview" target="_blank" rel="noopener">Flashbots Protect</a> instead of the public mempool. Your transaction is sent directly to block builders through a private channel, so sandwich bots never see it. This is the same infrastructure used by professional traders and MEV searchers. If Flashbots Protect is temporarily unreachable, we automatically fall back to direct Geth submission so your transaction always goes through.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do rebates work?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            When your swap creates a backrun opportunity (a profitable arbitrage that can be placed immediately after your trade), Reclaim captures that value and returns <strong>80% to you</strong> as a rebate. This is MEV that would have been captured by searchers anyway, but instead of going to anonymous bots, it comes back to you. Rebates are distributed on-chain via our smart contract. You don't need to claim them -- they are sent to your wallet automatically.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is it free?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            Yes, completely free, forever. There is no subscription, no per-transaction fee, and no hidden costs. Our revenue model is simple: we keep 20% of the MEV we capture from backruns. You get 80%. If we don't capture any MEV, nobody pays anything. Your transactions are always protected regardless of whether MEV is captured.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is it open source?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            Yes. The RPC proxy, website, and smart contracts are all open source. You can audit every line of code that handles your transactions.
+            <br><br>
+            <a href="https://github.com/reclaim-fi" target="_blank" rel="noopener">github.com/reclaim-fi</a>
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What wallets are supported?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            Any Ethereum wallet that allows you to set a custom RPC endpoint. This includes:
+            <br><br>
+            <strong>MetaMask</strong> -- Settings > Networks > Add Network<br>
+            <strong>Rabby</strong> -- Settings > Custom RPC<br>
+            <strong>Frame</strong> -- Chains > Ethereum > Custom RPC<br>
+            <strong>Rainbow</strong> -- Settings > Networks > Custom RPC<br>
+            <strong>Trust Wallet</strong> -- DApp browser with custom network<br>
+            <strong>Taho</strong> -- Networks > Add custom RPC<br>
+            <br>
+            Use RPC URL <code class="inline-code">https://rpc.reclaimfi.xyz</code> with Chain ID <code class="inline-code">1</code>.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Is my data collected?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            No. Reclaim does not track users, store personal data, or collect analytics. The only data we see are the Ethereum transactions you submit through our RPC -- the same data any RPC provider sees. We do not log IP addresses, we do not use cookies, and we do not share any data with third parties. Transaction data is processed in memory and not persisted beyond operational stats counters.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What if Reclaim goes down?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            The proxy has a built-in fallback mechanism. If Flashbots Protect is unreachable, your transaction is automatically submitted directly to our local Geth node. If the entire proxy is offline, you can temporarily switch back to any public Ethereum RPC (Infura, Alchemy, etc.) in your wallet settings. No transactions are ever lost -- they either go through Protect, fall back to Geth, or wait in your wallet for you to resubmit.
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do referrals work?</div>
+          <div class="faq-a"><div class="faq-a-inner">
+            Connect your wallet on <a href="https://reclaimfi.xyz">reclaimfi.xyz</a> to get a referral link. When someone uses Reclaim through your link:
+            <br><br>
+            <strong>They get 85%</strong> of captured MEV (5% more than the standard 80%)<br>
+            <strong>You get 5%</strong> of their captured MEV as passive income<br>
+            <strong>Reclaim keeps 10%</strong> (vs the usual 20%)<br>
+            <br>
+            Referral payouts are handled on-chain via the Reclaim smart contract. No caps, no expiry. Earnings accumulate forever for every referred user.
+          </div></div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- TECHNICAL DETAILS                                             -->
+        <!-- ============================================================ -->
+
+        <h2 id="architecture">Architecture</h2>
+
+        <p>
+          Reclaim runs on dedicated bare-metal infrastructure with a full Ethereum execution + consensus client stack. No third-party RPC dependencies.
+        </p>
+
+<div class="arch-diagram">
+                         User Wallet (MetaMask, Rabby, etc.)
+                                     |
+                                     | HTTPS
+                                     v
+                          +---------------------+
+                          |   rpc.reclaimfi.xyz  |
+                          |   (Nginx + TLS)      |
+                          +---------------------+
+                                     |
+                                     v
+                          +---------------------+
+                          |   Reclaim RPC Proxy  |
+                          |   (FastAPI :8550)    |
+                          +---------------------+
+                           /                   \
+                          /                     \
+             eth_sendRawTransaction         All other methods
+                        |                       |
+                        v                       v
+            +-------------------+     +-------------------+
+            | Flashbots Protect |     |    Local Geth     |
+            | (private mempool) |     |   (localhost:8645)|
+            +-------------------+     +-------------------+
+                        |                       |
+                        v                       v
+            +------------------------------------------+
+            |           Ethereum Mainnet               |
+            |    (block builders include tx)            |
+            +------------------------------------------+
+                                |
+                                v
+            +------------------------------------------+
+            |      Reclaim Smart Contract              |
+            |  0x679681d25Dc0293e671415E4372EEc3ceac73503  |
+            |  (rebate distribution + referrals)       |
+            +------------------------------------------+
+</div>
+
+        <h3>Infrastructure</h3>
+        <ul>
+          <li><strong>Hardware:</strong> Ryzen 9 5950X (16c/32t), 128GB ECC RAM, NVMe storage</li>
+          <li><strong>Execution client:</strong> Geth (full sync, 5TB NVMe)</li>
+          <li><strong>Consensus client:</strong> Lighthouse</li>
+          <li><strong>Proxy:</strong> FastAPI + Uvicorn (4 workers)</li>
+          <li><strong>TLS:</strong> Nginx reverse proxy with Let's Encrypt</li>
+          <li><strong>Protection:</strong> Flashbots Protect (fast mode)</li>
+        </ul>
+
+        <h2 id="dex-routers">Supported DEX Routers</h2>
+
+        <p>
+          Reclaim identifies swap transactions by matching the first 4 bytes of calldata against known DEX router function selectors. Detected swaps are analyzed for backrun opportunities.
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Protocol</th><th>Function</th><th>Selector</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Uniswap V2</td><td>swapExactTokensForTokens</td><td><code class="inline-code">0x38ed1739</code></td></tr>
+            <tr><td>Uniswap V2</td><td>swapTokensForExactTokens</td><td><code class="inline-code">0x8803dbee</code></td></tr>
+            <tr><td>Uniswap V2</td><td>swapExactETHForTokens</td><td><code class="inline-code">0x7ff36ab5</code></td></tr>
+            <tr><td>Uniswap V2</td><td>swapETHForExactTokens</td><td><code class="inline-code">0xfb3bdb41</code></td></tr>
+            <tr><td>Uniswap V2</td><td>swapExactTokensForETH</td><td><code class="inline-code">0x18cbafe5</code></td></tr>
+            <tr><td>Uniswap V2</td><td>swapTokensForExactETH</td><td><code class="inline-code">0x4a25d94a</code></td></tr>
+            <tr><td>Uniswap V3</td><td>exactInput</td><td><code class="inline-code">0xc04b8d59</code></td></tr>
+            <tr><td>Uniswap V3</td><td>exactInputSingle</td><td><code class="inline-code">0x414bf389</code></td></tr>
+            <tr><td>Uniswap V3</td><td>exactOutput</td><td><code class="inline-code">0xf28c0498</code></td></tr>
+            <tr><td>Uniswap V3</td><td>exactOutputSingle</td><td><code class="inline-code">0xdb3e2198</code></td></tr>
+            <tr><td>Uniswap Universal</td><td>execute</td><td><code class="inline-code">0x3593564c</code></td></tr>
+            <tr><td>Uniswap Universal</td><td>execute (deadline)</td><td><code class="inline-code">0x24856bc3</code></td></tr>
+            <tr><td>1inch</td><td>swap</td><td><code class="inline-code">0x12aa3caf</code></td></tr>
+            <tr><td>1inch</td><td>unoswap</td><td><code class="inline-code">0x0502b1c5</code></td></tr>
+            <tr><td>1inch</td><td>uniswapV3Swap</td><td><code class="inline-code">0xe449022e</code></td></tr>
+            <tr><td>SushiSwap</td><td>sellToUniswap</td><td><code class="inline-code">0xd9627aa4</code></td></tr>
+            <tr><td>0x Protocol</td><td>transformERC20</td><td><code class="inline-code">0x415565b0</code></td></tr>
+            <tr><td>Paraswap</td><td>megaSwap</td><td><code class="inline-code">0x54e3f31b</code></td></tr>
+            <tr><td>Paraswap</td><td>multiSwap</td><td><code class="inline-code">0xa94e78ef</code></td></tr>
+            <tr><td>Balancer</td><td>swap (Vault)</td><td><code class="inline-code">0x52bbbe29</code></td></tr>
+            <tr><td>Curve</td><td>exchange</td><td><code class="inline-code">0x3df02124</code></td></tr>
+            <tr><td>Curve</td><td>exchange_underlying</td><td><code class="inline-code">0xa6417ed6</code></td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="contract">Smart Contract</h2>
+
+        <p>The Reclaim rebate distribution contract handles on-chain payouts and referral tracking.</p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Property</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Address</td>
+              <td>
+                <a href="https://etherscan.io/address/0x679681d25Dc0293e671415E4372EEc3ceac73503" target="_blank" rel="noopener">
+                  <code class="inline-code">0x679681d25Dc0293e671415E4372EEc3ceac73503</code>
+                </a>
+              </td>
+            </tr>
+            <tr><td>Network</td><td>Ethereum Mainnet (Chain ID 1)</td></tr>
+            <tr><td>Verified</td><td>Yes (Etherscan)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Rebate Split</h3>
+        <table class="doc-table">
+          <thead>
+            <tr><th>Recipient</th><th>Standard</th><th>Referred User</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>User (trader)</td><td>80%</td><td>85%</td></tr>
+            <tr><td>Referrer</td><td>--</td><td>5%</td></tr>
+            <tr><td>Reclaim (protocol)</td><td>20%</td><td>10%</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="rebate-schedule">Rebate Distribution</h2>
+
+        <ul>
+          <li><strong>Trigger:</strong> Rebates are calculated whenever a backrun bundle is successfully included in a block.</li>
+          <li><strong>Minimum threshold:</strong> 0.001 ETH profit required before a backrun is attempted.</li>
+          <li><strong>Distribution:</strong> On-chain via the Reclaim smart contract. Sent directly to the user's wallet.</li>
+          <li><strong>Timing:</strong> Typically within 1-2 blocks of the original swap.</li>
+          <li><strong>Tracking:</strong> All rebate transactions are visible on Etherscan under the contract address.</li>
+        </ul>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div style="max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;">
+      <a href="/" style="display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1.1rem;color:#fff;">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#00ff88" stroke-width="2" fill="none"/>
+          <path d="M16 6 L22 14 L16 26 L10 14 Z" fill="#00ff88" opacity="0.3"/>
+          <path d="M16 8 L20 14 L16 24 L12 14 Z" stroke="#00ff88" stroke-width="1.5" fill="none"/>
+        </svg>
+        Reclaim
+      </a>
+      <div style="display:flex;gap:1.5rem;">
+        <a href="https://github.com/reclaim-fi" target="_blank" rel="noopener">GitHub</a>
+        <a href="#">Twitter</a>
+        <a href="#">Telegram</a>
+        <a href="#">Discord</a>
+      </div>
+      <div style="color:var(--text-muted);">
+        Open source &middot; No tracking &middot; Built on <a href="https://docs.flashbots.net/flashbots-protect/overview" target="_blank" rel="noopener">Flashbots Protect</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

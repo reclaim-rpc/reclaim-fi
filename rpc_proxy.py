@@ -21,6 +21,9 @@ from eth_account._utils.legacy_transactions import (
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+
+import database as db
 
 # ---------------------------------------------------------------------------
 # Config
@@ -112,9 +115,44 @@ async def lifespan(app: FastAPI):
         timeout=httpx.Timeout(30.0, connect=5.0),
         limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
     )
+
+    # Initialize database
+    await db.init()
+
+    # Restore persisted stats
+    saved = await db.load_stats_snapshot()
+    for key in ("total_requests", "total_txs_protected", "total_txs_forwarded",
+                "total_swaps_detected", "total_backruns_attempted",
+                "total_mev_captured_wei", "total_rebates_paid_wei"):
+        if key in saved:
+            stats[key] = int(saved[key])
+
     log.info("Reclaim RPC proxy started — listening on :8550")
     log.info(f"Backend: {GETH_RPC} | Protect: {FLASHBOTS_PROTECT}")
+
+    # Background stats persistence (every 60s)
+    async def persist_loop():
+        while True:
+            await asyncio.sleep(60)
+            try:
+                await db.save_stats_snapshot({
+                    k: v for k, v in stats.items()
+                    if k not in ("active_users", "requests_by_method")
+                })
+            except Exception as e:
+                log.error(f"Stats persist failed: {e}")
+
+    persist_task = asyncio.create_task(persist_loop())
+
     yield
+
+    persist_task.cancel()
+    # Final persist
+    await db.save_stats_snapshot({
+        k: v for k, v in stats.items()
+        if k not in ("active_users", "requests_by_method")
+    })
+    await db.close()
     await http_client.aclose()
     log.info("Reclaim RPC proxy stopped")
 
@@ -315,8 +353,13 @@ async def handle_protected_tx(data: dict, params: list, request_id) -> JSONRespo
 
     # Decode transaction to check if it's a swap
     tx = decode_raw_tx(raw_tx)
+    is_swap = tx is not None and is_swap_tx(tx)
 
-    if tx and is_swap_tx(tx):
+    # Track user in database (non-blocking)
+    if sender:
+        asyncio.create_task(_track_user_safe(sender, is_swap))
+
+    if is_swap:
         # Check for backrun opportunity
         backrun = await compute_backrun(tx, raw_tx)
 
@@ -332,11 +375,19 @@ async def handle_protected_tx(data: dict, params: list, request_id) -> JSONRespo
     # All transactions go through Flashbots Protect for sandwich protection
     log.info(
         f"TX_PROTECTED: sender={sender or 'unknown'} "
-        f"is_swap={tx is not None and is_swap_tx(tx)} "
+        f"is_swap={is_swap} "
         f"to={tx.get('to', 'unknown') if tx else 'unknown'}"
     )
 
     return await forward_via_protect(data)
+
+
+async def _track_user_safe(sender: str, is_swap: bool):
+    """Track user in DB, swallow errors to never block request path."""
+    try:
+        await db.track_user(sender, is_swap)
+    except Exception as e:
+        log.warning(f"DB track_user failed: {e}")
 
 
 # ---------------------------------------------------------------------------
@@ -423,6 +474,11 @@ async def rpc_handler(request: Request):
 async def get_stats():
     """Public stats for the dashboard."""
     uptime = time.time() - START_TIME
+    db_users = 0
+    try:
+        db_users = await db.get_user_count()
+    except Exception:
+        pass
     return {
         "total_requests": stats["total_requests"],
         "total_txs_protected": stats["total_txs_protected"],
@@ -430,7 +486,7 @@ async def get_stats():
         "total_backruns_attempted": stats["total_backruns_attempted"],
         "total_mev_captured_eth": stats["total_mev_captured_wei"] / 1e18,
         "total_rebates_paid_eth": stats["total_rebates_paid_wei"] / 1e18,
-        "active_users": len(stats["active_users"]),
+        "active_users": max(len(stats["active_users"]), db_users),
         "uptime_seconds": int(uptime),
         "top_methods": dict(
             sorted(
@@ -440,6 +496,66 @@ async def get_stats():
             )[:10]
         ),
     }
+
+
+@app.get("/stats/user/{address}")
+async def get_user_stats(address: str):
+    """Per-user stats for the dashboard."""
+    user = await db.get_user_stats(address)
+    if not user:
+        return JSONResponse(content={"error": "User not found"}, status_code=404)
+    return {
+        "address": user["address"],
+        "total_txs": user["total_txs"],
+        "total_swaps": user["total_swaps"],
+        "total_rebates_eth": user["total_rebates_wei"] / 1e18,
+        "pending_rebates_eth": user["pending_rebates_wei"] / 1e18,
+        "referrer": user["referrer"],
+        "referral_count": user["referral_count"],
+        "first_seen": user["first_seen"],
+        "last_seen": user["last_seen"],
+    }
+
+
+@app.get("/leaderboard")
+async def get_leaderboard(limit: int = 20):
+    """Top earners leaderboard."""
+    limit = min(limit, 100)
+    leaders = await db.get_leaderboard(limit)
+    return {
+        "leaderboard": [
+            {
+                "rank": i + 1,
+                "address": u["address"],
+                "total_txs": u["total_txs"],
+                "total_earned_eth": u["total_earned_wei"] / 1e18,
+            }
+            for i, u in enumerate(leaders)
+        ],
+    }
+
+
+class ReferralRequest(BaseModel):
+    user: str
+    referrer: str
+
+
+@app.post("/register-referral")
+async def register_referral(req: ReferralRequest):
+    """Register an off-chain referral (called from the website)."""
+    from eth_utils import is_address
+
+    if not is_address(req.user) or not is_address(req.referrer):
+        return JSONResponse(
+            content={"error": "Invalid address"}, status_code=400
+        )
+    if req.user.lower() == req.referrer.lower():
+        return JSONResponse(
+            content={"error": "Self-referral"}, status_code=400
+        )
+
+    ok = await db.register_referral(req.user, req.referrer)
+    return {"registered": ok}
 
 
 @app.get("/health")
