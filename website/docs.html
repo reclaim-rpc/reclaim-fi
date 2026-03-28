@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reclaim — Documentation</title>
+<meta name="description" content="Technical documentation for the Reclaim MEV Protection Protocol. Setup guides, API reference, smart contract details, and architecture overview.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#050507;--bg3:#0d0e14;--bg4:#12131b;--ac:#00e87b;--acb:#1aff8e;--acg:rgba(0,232,123,.12);--acs:rgba(0,232,123,.06);--cy:#00b4d8;--dn:#ff4757;--t1:#eeeef0;--t2:#8b8d9a;--t3:#55576a;--t4:#3d3f50;--bd:rgba(255,255,255,.05);--bdh:rgba(255,255,255,.1);--fh:'Outfit',sans-serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace}
+html{scroll-behavior:smooth;background:#020204}
+body{font-family:var(--fb);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+a{color:var(--ac);text-decoration:none;transition:color .2s}
+a:hover{color:var(--acb)}
+
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+
+/* Sidebar */
+.sidebar{background:var(--bg2);border-right:1px solid var(--bd);padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--t4);border-radius:2px}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:0 24px 24px;border-bottom:1px solid var(--bd);margin-bottom:16px;font-family:var(--fh);font-weight:700;font-size:20px;color:var(--t1);letter-spacing:-.5px}
+.sb-logo .lm{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--ac),var(--cy));display:flex;align-items:center;justify-content:center}
+.sb-logo .lm svg{width:16px;height:16px}
+.sb-back{display:flex;align-items:center;gap:6px;padding:8px 24px;font-size:13px;color:var(--t3);margin-bottom:8px}
+.sb-back:hover{color:var(--t2)}
+
+.sb-section{padding:0 12px;margin-bottom:8px}
+.sb-title{font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:12px 12px 8px}
+.sb-link{display:block;padding:8px 12px;border-radius:8px;font-size:14px;color:var(--t2);transition:all .2s;font-weight:400}
+.sb-link:hover{background:rgba(255,255,255,.03);color:var(--t1)}
+.sb-link.active{background:var(--acs);color:var(--ac);font-weight:500}
+
+/* Main */
+.main{padding:48px 80px 120px;max-width:860px}
+.main h1{font-family:var(--fh);font-size:36px;font-weight:700;letter-spacing:-1px;margin-bottom:8px}
+.main .subtitle{font-size:17px;color:var(--t2);margin-bottom:40px;line-height:1.6}
+.main h2{font-family:var(--fh);font-size:24px;font-weight:600;letter-spacing:-.5px;margin:48px 0 16px;padding-top:24px;border-top:1px solid var(--bd)}
+.main h2:first-of-type{border-top:none;margin-top:0}
+.main h3{font-family:var(--fh);font-size:18px;font-weight:600;margin:32px 0 12px;letter-spacing:-.2px}
+.main p{font-size:15px;line-height:1.8;color:var(--t2);margin-bottom:16px}
+.main strong{color:var(--t1);font-weight:500}
+.main ul,.main ol{margin:0 0 20px 20px;color:var(--t2);font-size:15px;line-height:2}
+.main li{padding-left:4px}
+
+/* Code */
+code{font-family:var(--fm);font-size:13px;background:rgba(255,255,255,.04);padding:2px 7px;border-radius:4px;color:var(--ac)}
+pre{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:20px 24px;margin:16px 0 24px;overflow-x:auto;font-family:var(--fm);font-size:13px;line-height:1.7;color:var(--t2)}
+pre code{background:none;padding:0;color:inherit}
+.code-label{font-family:var(--fm);font-size:11px;color:var(--t3);margin-bottom:-12px;letter-spacing:.5px}
+
+/* Callouts */
+.callout{border-radius:12px;padding:20px 24px;margin:20px 0;font-size:14px;line-height:1.7;display:flex;gap:12px}
+.callout .icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.callout p{margin:0;color:var(--t2)}
+.callout.info{background:rgba(0,232,123,.04);border:1px solid rgba(0,232,123,.1)}
+.callout.warn{background:rgba(255,168,0,.04);border:1px solid rgba(255,168,0,.1)}
+.callout.danger{background:rgba(255,71,87,.04);border:1px solid rgba(255,71,87,.1)}
+
+/* Table */
+table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:14px}
+th{text-align:left;font-family:var(--fh);font-weight:600;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);padding:10px 16px;border-bottom:1px solid var(--bdh)}
+td{padding:12px 16px;border-bottom:1px solid var(--bd);color:var(--t2)}
+tr:hover td{background:rgba(255,255,255,.01)}
+
+/* Steps */
+.step{display:flex;gap:16px;margin:20px 0;padding:20px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--acg);border:1px solid rgba(0,232,123,.2);color:var(--ac);font-family:var(--fh);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-content h4{font-family:var(--fh);font-size:16px;font-weight:600;margin-bottom:6px}
+.step-content p{font-size:14px;margin:0}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:50px;font-size:11px;font-weight:600;letter-spacing:.5px}
+.badge.live{background:var(--acg);color:var(--ac);border:1px solid rgba(0,232,123,.2)}
+.badge.soon{background:rgba(255,168,0,.08);color:#ffa800;border:1px solid rgba(255,168,0,.15)}
+.badge.planned{background:rgba(255,255,255,.03);color:var(--t3);border:1px solid var(--bd)}
+
+/* Nav top bar for mobile */
+.topbar{display:none;position:sticky;top:0;z-index:50;background:rgba(8,9,13,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);padding:14px 20px}
+
+/* Tabs for API reference */
+.tabs{display:flex;gap:4px;margin:20px 0 0;border-bottom:1px solid var(--bd)}
+.tab{padding:10px 20px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab:hover{color:var(--t2)}
+.tab.active{color:var(--ac);border-bottom-color:var(--ac)}
+
+/* Param list */
+.param{padding:12px 0;border-bottom:1px solid var(--bd)}
+.param:last-child{border-bottom:none}
+.param-name{font-family:var(--fm);font-size:13px;color:var(--ac);font-weight:500}
+.param-type{font-size:12px;color:var(--t3);margin-left:8px}
+.param-req{font-size:10px;color:var(--dn);margin-left:8px;text-transform:uppercase;letter-spacing:.5px}
+.param-desc{font-size:13px;color:var(--t2);margin-top:4px;line-height:1.6}
+
+/* Architecture diagram */
+.arch{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:32px;margin:24px 0;font-family:var(--fm);font-size:12px;color:var(--t2);line-height:1.8;white-space:pre;overflow-x:auto}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .topbar{display:flex;align-items:center;justify-content:space-between}
+  .main{padding:32px 20px 80px}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="/" class="sb-logo">
+    <div class="lm"><svg viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    Reclaim
+  </a>
+  <a href="/" class="sb-back">&larr; Back to site</a>
+
+  <nav class="sb-section">
+    <div class="sb-title">Getting started</div>
+    <a href="#overview" class="sb-link active">Overview</a>
+    <a href="#quickstart" class="sb-link">Quick start</a>
+    <a href="#metamask" class="sb-link">MetaMask setup</a>
+    <a href="#how-it-works" class="sb-link">How it works</a>
+  </nav>
+
+  <nav class="sb-section">
+    <div class="sb-title">Products</div>
+    <a href="#rpc" class="sb-link">Reclaim RPC</a>
+    <a href="#swap" class="sb-link">Reclaim Swap</a>
+    <a href="#wallet" class="sb-link">Reclaim Wallet</a>
+    <a href="#infra" class="sb-link">Infrastructure</a>
+  </nav>
+
+  <nav class="sb-section">
+    <div class="sb-title">Technical</div>
+    <a href="#architecture" class="sb-link">Architecture</a>
+    <a href="#api" class="sb-link">API reference</a>
+    <a href="#contract" class="sb-link">Smart contract</a>
+    <a href="#security" class="sb-link">Security</a>
+  </nav>
+
+  <nav class="sb-section">
+    <div class="sb-title">Community</div>
+    <a href="#referral" class="sb-link">Referral program</a>
+    <a href="#faq" class="sb-link">FAQ</a>
+    <a href="#contributing" class="sb-link">Contributing</a>
+  </nav>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="top">
+
+<h1>Reclaim documentation</h1>
+<p class="subtitle">Everything you need to integrate, use, and build on the Reclaim MEV Protection Protocol.</p>
+
+<!-- OVERVIEW -->
+<h2 id="overview">Overview</h2>
+<p>Reclaim is a <strong>full-stack MEV protection protocol</strong> for Ethereum. It shields your transactions from sandwich attacks, captures MEV that bots would extract, and returns 80% of captured value directly to your wallet.</p>
+
+<p>The protocol consists of four products, each building on the previous:</p>
+
+<table>
+  <tr><th>Product</th><th>Status</th><th>Description</th></tr>
+  <tr><td><strong>Reclaim RPC</strong></td><td><span class="badge live">Live</span></td><td>MEV-protected RPC endpoint for MetaMask and any Web3 wallet</td></tr>
+  <tr><td><strong>Reclaim Swap</strong></td><td><span class="badge soon">Q2 2026</span></td><td>DEX aggregator with best execution and MEV cashback</td></tr>
+  <tr><td><strong>Reclaim Wallet</strong></td><td><span class="badge soon">Q3 2026</span></td><td>Chrome extension with native MEV protection on all transactions</td></tr>
+  <tr><td><strong>Reclaim Infrastructure</strong></td><td><span class="badge planned">Q4 2026</span></td><td>Own block builder, relay, and validator for maximum MEV capture</td></tr>
+</table>
+
+<div class="callout info">
+  <span class="icon">&#128161;</span>
+  <p><strong>New to MEV?</strong> MEV (Maximal Extractable Value) is the profit that bots extract by reordering, inserting, or censoring your transactions. Sandwich attacks alone have cost Ethereum users over $1.4 billion. Reclaim eliminates this invisible tax.</p>
+</div>
+
+<!-- QUICKSTART -->
+<h2 id="quickstart">Quick start</h2>
+<p>Get protected in under 30 seconds. No account, no sign-up, no fees.</p>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-content">
+    <h4>Add the RPC to your wallet</h4>
+    <p>Click the "Protect my wallet" button on <a href="/">reclaimfi.xyz</a>, or manually add the RPC URL to MetaMask.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-content">
+    <h4>Trade on any DEX</h4>
+    <p>Use Uniswap, 1inch, Curve, Balancer — any Ethereum dApp works normally. Your transactions are routed privately.</p>
+  </div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-content">
+    <h4>Earn rebates automatically</h4>
+    <p>80% of captured MEV is returned to your wallet via the on-chain rebate contract. No action required.</p>
+  </div>
+</div>
+
+<!-- METAMASK SETUP -->
+<h2 id="metamask">MetaMask setup</h2>
+<h3>Automatic (recommended)</h3>
+<p>Click the <strong>"Protect my wallet"</strong> button on our website. This calls <code>wallet_addEthereumChain</code> and configures MetaMask automatically.</p>
+
+<h3>Manual setup</h3>
+<p>Open MetaMask → Settings → Networks → Add Network → Add a network manually:</p>
+
+<table>
+  <tr><th>Field</th><th>Value</th></tr>
+  <tr><td>Network name</td><td><code>Ethereum (Reclaim Protected)</code></td></tr>
+  <tr><td>RPC URL</td><td><code>https://rpc.reclaimfi.xyz</code></td></tr>
+  <tr><td>Chain ID</td><td><code>1</code></td></tr>
+  <tr><td>Currency symbol</td><td><code>ETH</code></td></tr>
+  <tr><td>Block explorer URL</td><td><code>https://etherscan.io</code></td></tr>
+</table>
+
+<div class="callout info">
+  <span class="icon">&#128274;</span>
+  <p><strong>Privacy note:</strong> Reclaim does not log IP addresses, wallet addresses, or transaction data. The RPC proxy forwards your transactions privately and discards all metadata after processing.</p>
+</div>
+
+<h3>Other wallets</h3>
+<p>Any wallet that supports custom RPC endpoints works with Reclaim. This includes <strong>Rabby</strong>, <strong>Rainbow</strong>, <strong>Coinbase Wallet</strong>, <strong>Trust Wallet</strong>, and <strong>Frame</strong>. Simply add <code>https://rpc.reclaimfi.xyz</code> as a custom Ethereum RPC.</p>
+
+<!-- HOW IT WORKS -->
+<h2 id="how-it-works">How it works</h2>
+<h3>The MEV problem</h3>
+<p>When you submit a transaction on Ethereum, it enters the <strong>public mempool</strong> — a waiting area visible to everyone. MEV bots monitor this mempool and exploit your transactions through:</p>
+<ul>
+  <li><strong>Sandwich attacks:</strong> A bot places a buy order before yours and a sell order after, profiting from the price movement your trade creates.</li>
+  <li><strong>Front-running:</strong> A bot copies your transaction with a higher gas price, executing the same trade before you at a better price.</li>
+  <li><strong>Back-running:</strong> A bot places a trade immediately after yours to capture arbitrage created by your transaction's price impact.</li>
+</ul>
+
+<h3>The Reclaim solution</h3>
+<p>Reclaim operates a three-layer defense:</p>
+<ol>
+  <li><strong>Private routing:</strong> Your transaction is sent to a private mempool via Flashbots Protect infrastructure. MEV bots cannot see it in the public mempool, eliminating sandwich attacks entirely.</li>
+  <li><strong>Value capture:</strong> When your transaction creates legitimate arbitrage opportunities (back-running), Reclaim's engine captures this value instead of letting random bots take it.</li>
+  <li><strong>Rebate distribution:</strong> 80% of captured MEV is returned to your wallet through our on-chain rebate smart contract. The remaining 20% covers infrastructure costs.</li>
+</ol>
+
+<div class="callout warn">
+  <span class="icon">&#9888;</span>
+  <p><strong>Important:</strong> Reclaim protects against sandwich attacks and front-running. It does not prevent slippage from low liquidity or market movements between blocks. Always set appropriate slippage tolerance in your DEX settings.</p>
+</div>
+
+<!-- PRODUCTS -->
+<h2 id="rpc">Reclaim RPC <span class="badge live">Live</span></h2>
+<p>The Reclaim RPC is a JSON-RPC proxy that intercepts <code>eth_sendRawTransaction</code> calls and routes them through private infrastructure. All other RPC methods are forwarded to a standard Ethereum node.</p>
+
+<h3>Endpoint</h3>
+<pre><code>https://rpc.reclaimfi.xyz</code></pre>
+
+<h3>Supported methods</h3>
+<p>All standard Ethereum JSON-RPC methods are supported. The RPC is fully compatible with MetaMask, ethers.js, web3.js, viem, and any Web3 library.</p>
+
+<table>
+  <tr><th>Method</th><th>Behavior</th></tr>
+  <tr><td><code>eth_sendRawTransaction</code></td><td>Routed privately via Flashbots Protect. Transaction is hidden from public mempool.</td></tr>
+  <tr><td><code>eth_call</code></td><td>Standard — forwarded to Ethereum node</td></tr>
+  <tr><td><code>eth_getBalance</code></td><td>Standard — forwarded to Ethereum node</td></tr>
+  <tr><td><code>eth_blockNumber</code></td><td>Standard — forwarded to Ethereum node</td></tr>
+  <tr><td>All other methods</td><td>Standard — forwarded to Ethereum node</td></tr>
+</table>
+
+<h3>Rate limits</h3>
+<p>The RPC has no artificial rate limits for standard usage. High-frequency programmatic access (>100 requests/second) may be throttled. Contact us for enterprise access.</p>
+
+<h3>Reliability</h3>
+<p>The RPC proxy runs on dedicated infrastructure with automatic failover. If the private routing path is unavailable, transactions fall back to standard Ethereum submission. Uptime target: 99.9%.</p>
+
+<h2 id="swap">Reclaim Swap <span class="badge soon">Q2 2026</span></h2>
+<p>Reclaim Swap is a DEX aggregator that routes trades through the optimal path across Uniswap, Curve, Balancer, SushiSwap, and other venues. Unlike standard aggregators, Reclaim Swap captures MEV created by your trade and returns it as cashback.</p>
+
+<h3>How it differs from other aggregators</h3>
+<ul>
+  <li><strong>Intent-based execution:</strong> You sign an intent (what you want to trade), not a specific transaction. This allows the protocol to find the optimal execution path at the moment of inclusion.</li>
+  <li><strong>MEV cashback:</strong> Standard aggregators route your trade and keep any MEV it creates. Reclaim captures it and returns 80% to you.</li>
+  <li><strong>Gasless swaps:</strong> Using EIP-2612 permit signatures, you can trade without holding ETH for gas. The protocol covers gas from MEV proceeds.</li>
+</ul>
+
+<h2 id="wallet">Reclaim Wallet <span class="badge soon">Q3 2026</span></h2>
+<p>A Chrome extension wallet with native MEV protection built into every transaction — not just swaps. Transfers, approvals, contract interactions, NFT mints — everything flows through Reclaim's private routing.</p>
+
+<h3>Planned features</h3>
+<ul>
+  <li>Transaction simulation with risk alerts before signing</li>
+  <li>Built-in earnings dashboard showing accumulated rebates</li>
+  <li>Referral rewards tracking and management</li>
+  <li>Multi-chain support (Ethereum, Arbitrum, Optimism, Base)</li>
+  <li>Account abstraction support (ERC-4337)</li>
+</ul>
+
+<h2 id="infra">Infrastructure <span class="badge planned">Q4 2026</span></h2>
+<p>The final layer: Reclaim operates its own block builder, relay, and validator infrastructure. This captures MEV at every level of the Ethereum stack — from user intent to block inclusion — and returns maximum value to the ecosystem.</p>
+
+<h3>Vertical integration</h3>
+<div class="arch">User transaction
+    ↓
+Reclaim RPC (private routing)
+    ↓
+Reclaim Builder (block construction)
+    ↓
+Reclaim Relay (block delivery)
+    ↓
+Validator (block proposal)
+    ↓
+On-chain settlement + rebate distribution</div>
+
+<p>By controlling the full stack, Reclaim can capture 90-100% of MEV from its orderflow (compared to 40-60% when relying on third-party builders). The majority is returned to users through the rebate contract.</p>
+
+<!-- ARCHITECTURE -->
+<h2 id="architecture">Architecture</h2>
+<h3>System overview</h3>
+<div class="arch">┌─────────────────────────────────────────────────────────┐
+│                    USER WALLET                           │
+│  MetaMask / Rabby / Any Web3 Wallet                     │
+│  RPC URL: https://rpc.reclaimfi.xyz                     │
+└────────────────────────┬────────────────────────────────┘
+                         │ eth_sendRawTransaction
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                  RECLAIM RPC PROXY                        │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │  TX Decoder   │  │  MEV Engine  │  │  Rebate Mgr  │  │
+│  │  Decode swap  │  │  Find backrun│  │  Track users │  │
+│  │  Identify DEX │  │  Build bundle│  │  Compute pct │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  │
+│         │                  │                  │          │
+│         ▼                  ▼                  ▼          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │              Flashbots Protect RPC                  │  │
+│  │         Private mempool submission                  │  │
+│  └────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                  ETHEREUM MAINNET                         │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐                     │
+│  │  User's TX   │  │  Backrun TX  │                     │
+│  │  (protected) │  │  (MEV capture)│                     │
+│  └──────────────┘  └──────────────┘                     │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │           Rebate Smart Contract                     │  │
+│  │  batchDistribute() → 80% to users                  │  │
+│  └────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘</div>
+
+<h3>Data flow</h3>
+<ol>
+  <li>User submits transaction via MetaMask (configured with Reclaim RPC)</li>
+  <li>RPC proxy decodes the transaction to identify swap parameters</li>
+  <li>Transaction is forwarded to Flashbots Protect (private mempool)</li>
+  <li>MEV engine evaluates backrun opportunities against the user's swap</li>
+  <li>If profitable: backrun bundle is submitted alongside the user's transaction</li>
+  <li>User's transaction executes at the expected price (no sandwich)</li>
+  <li>Backrun profit is accumulated in the rebate contract</li>
+  <li>Periodic batch distribution sends 80% to users, 20% to protocol</li>
+</ol>
+
+<!-- API REFERENCE -->
+<h2 id="api">API reference</h2>
+<h3>RPC endpoint</h3>
+<pre><code>POST https://rpc.reclaimfi.xyz</code></pre>
+<p>Standard JSON-RPC 2.0. All Ethereum methods supported.</p>
+
+<h3>Stats endpoint</h3>
+<pre><code>GET https://rpc.reclaimfi.xyz/stats</code></pre>
+<p>Returns protocol statistics. No authentication required.</p>
+
+<p class="code-label">Response</p>
+<pre><code>{
+  "total_requests": 142857,
+  "total_txs_protected": 8421,
+  "total_mev_captured_wei": "1250000000000000000",
+  "total_rebates_paid_wei": "1000000000000000000",
+  "active_users": 347
+}</code></pre>
+
+<h3>Health endpoint</h3>
+<pre><code>GET https://rpc.reclaimfi.xyz/health</code></pre>
+<p>Returns 200 if the RPC proxy is operational.</p>
+
+<!-- SMART CONTRACT -->
+<h2 id="contract">Smart contract</h2>
+<h3>Rebate distributor</h3>
+<p>The rebate contract handles all MEV distribution to users. It is deployed on Ethereum mainnet and is fully verifiable on Etherscan.</p>
+
+<table>
+  <tr><th>Field</th><th>Value</th></tr>
+  <tr><td>Network</td><td>Ethereum Mainnet</td></tr>
+  <tr><td>Solidity</td><td>^0.8.24</td></tr>
+  <tr><td>License</td><td>MIT</td></tr>
+</table>
+
+<h3>Key functions</h3>
+
+<div class="param">
+  <span class="param-name">batchDistribute(address[] users, uint256[] amounts)</span>
+  <span class="param-type">external</span>
+  <span class="param-req">owner only</span>
+  <div class="param-desc">Distributes ETH rebates to multiple users in a single transaction. Called periodically by the protocol to batch-settle accumulated rebates.</div>
+</div>
+
+<div class="param">
+  <span class="param-name">batchReferralPay(address[] referrers, uint256[] amounts)</span>
+  <span class="param-type">external</span>
+  <span class="param-req">owner only</span>
+  <div class="param-desc">Distributes referral rewards to users who referred others to the protocol.</div>
+</div>
+
+<div class="param">
+  <span class="param-name">registerReferrer(address referrer)</span>
+  <span class="param-type">external</span>
+  <div class="param-desc">Registers a referral relationship. Called once when a new user onboards through a referral link. Cannot be changed after registration.</div>
+</div>
+
+<div class="param">
+  <span class="param-name">getUserStats(address user)</span>
+  <span class="param-type">view → (uint256 totalRebates, uint256 referralEarnings, uint256 referralCount)</span>
+  <div class="param-desc">Returns the user's total rebates received, total referral earnings, and number of referred users. Used by the dashboard.</div>
+</div>
+
+<div class="param">
+  <span class="param-name">referrers(address user)</span>
+  <span class="param-type">view → address</span>
+  <div class="param-desc">Returns the referrer address for a given user. Returns zero address if no referrer.</div>
+</div>
+
+<!-- SECURITY -->
+<h2 id="security">Security</h2>
+<h3>Trust model</h3>
+<p>Reclaim operates with <strong>minimal trust assumptions</strong>:</p>
+<ul>
+  <li><strong>Transaction privacy:</strong> Relies on Flashbots Protect infrastructure, which is battle-tested with millions of transactions. Reclaim does not store or log transaction data.</li>
+  <li><strong>Rebate honesty:</strong> The rebate contract is on-chain and verifiable. Users can independently verify that distributions match captured MEV. The protocol cannot take more than the declared 20% share.</li>
+  <li><strong>RPC availability:</strong> If the Reclaim RPC is unavailable, MetaMask automatically falls back to the default Ethereum RPC. No transactions are lost or delayed beyond normal network conditions.</li>
+</ul>
+
+<h3>What Reclaim can and cannot do</h3>
+<table>
+  <tr><th>Can</th><th>Cannot</th></tr>
+  <tr><td>See your transaction before it's on-chain</td><td>Modify your transaction</td></tr>
+  <tr><td>Forward your transaction privately</td><td>Prevent you from using other RPCs</td></tr>
+  <tr><td>Capture backrun MEV from your trade</td><td>Sandwich or front-run your trade</td></tr>
+  <tr><td>Distribute rebates to your wallet</td><td>Access your private keys or funds</td></tr>
+</table>
+
+<h3>Open source</h3>
+<p>The full codebase is available on <a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank">GitHub</a>. We encourage security researchers to review the code and report vulnerabilities.</p>
+
+<h3>Responsible disclosure</h3>
+<p>If you discover a security vulnerability, please report it to <a href="mailto:contact@reclaimfi.xyz">contact@reclaimfi.xyz</a>. We take all reports seriously and will respond within 24 hours.</p>
+
+<!-- REFERRAL -->
+<h2 id="referral">Referral program</h2>
+<p>Earn passive income by inviting others to use Reclaim. When your referrals earn MEV rebates, you receive <strong>5%</strong> of their rebates — automatically, on-chain, forever.</p>
+
+<h3>How it works</h3>
+<ol>
+  <li>Connect your wallet on <a href="/">reclaimfi.xyz</a></li>
+  <li>Copy your unique referral link: <code>reclaimfi.xyz/?ref=0xYOUR_ADDRESS</code></li>
+  <li>Share with friends, communities, Twitter — anyone who trades on Ethereum</li>
+  <li>When they add Reclaim RPC and start trading, their referral is registered on-chain</li>
+  <li>Every time they earn rebates, 5% is automatically distributed to your wallet</li>
+</ol>
+
+<div class="callout info">
+  <span class="icon">&#128176;</span>
+  <p><strong>Referral rewards are permanent.</strong> Once a user registers with your referral link, you earn from their activity forever. There is no expiration and no cap on earnings.</p>
+</div>
+
+<h3>Economics</h3>
+<table>
+  <tr><th>Scenario</th><th>Your monthly earnings</th></tr>
+  <tr><td>10 active referrals, each earning $50/mo in rebates</td><td>$25/month</td></tr>
+  <tr><td>100 active referrals, each earning $50/mo</td><td>$250/month</td></tr>
+  <tr><td>1,000 active referrals, each earning $50/mo</td><td>$2,500/month</td></tr>
+</table>
+
+<!-- FAQ -->
+<h2 id="faq">FAQ</h2>
+
+<h3>Is Reclaim free?</h3>
+<p>Yes. There are no fees to use the Reclaim RPC. The protocol earns revenue from the 20% share of captured MEV, which would otherwise go to random bots. You pay nothing extra — you actually earn money you would have lost.</p>
+
+<h3>Does Reclaim work with all dApps?</h3>
+<p>Yes. Any Ethereum dApp that works with MetaMask works with Reclaim. Uniswap, Aave, Curve, OpenSea, 1inch, Balancer — all compatible. The RPC is a transparent proxy that doesn't interfere with normal Ethereum operations.</p>
+
+<h3>Will my transactions be slower?</h3>
+<p>Transactions routed through Flashbots Protect typically land within 1-3 blocks (12-36 seconds), similar to standard submission. In rare cases of network congestion, private transactions may take slightly longer as they don't compete on gas price in the public mempool.</p>
+
+<h3>What if the Reclaim RPC goes down?</h3>
+<p>MetaMask stores multiple RPC endpoints. If the Reclaim RPC is unavailable, you can switch to your default Ethereum RPC (Infura, Alchemy, etc.) with one click. No funds are at risk.</p>
+
+<h3>How are rebates calculated?</h3>
+<p>When your transaction creates a backrun opportunity (arbitrage from the price impact of your swap), the protocol captures this value via an atomic flash loan transaction. 80% of the profit from this backrun is allocated to your wallet. Rebates are accumulated and distributed in batches to minimize gas costs.</p>
+
+<h3>Can I verify my rebates on-chain?</h3>
+<p>Yes. The rebate smart contract is deployed on Ethereum mainnet and verified on Etherscan. You can call <code>getUserStats(yourAddress)</code> to see your total rebates, referral earnings, and referral count.</p>
+
+<h3>Is Reclaim open source?</h3>
+<p>Yes. The complete source code is available at <a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank">github.com/reclaim-rpc/reclaim-fi</a>. We believe transparency is essential for trust in DeFi infrastructure.</p>
+
+<h3>How is Reclaim different from Flashbots Protect?</h3>
+<p>Flashbots Protect provides private transaction routing and some MEV refunds. Reclaim builds on top of Flashbots infrastructure and adds: active MEV capture through a dedicated backrun engine, an on-chain rebate contract with 80% user share, a referral program, and a roadmap toward a full-stack MEV protocol (DEX, wallet, builder).</p>
+
+<h3>How is Reclaim different from MEV Blocker?</h3>
+<p>MEV Blocker (by CoW Protocol) returns 90% of backrun value to users. Reclaim returns 80% but offers a broader product suite: upcoming DEX aggregator, browser wallet, and full vertical infrastructure. MEV Blocker is an RPC endpoint; Reclaim is a protocol ecosystem.</p>
+
+<!-- CONTRIBUTING -->
+<h2 id="contributing">Contributing</h2>
+<p>Reclaim is open source and welcomes contributions from the community.</p>
+
+<h3>Repository</h3>
+<pre><code>git clone https://github.com/reclaim-rpc/reclaim-fi.git</code></pre>
+
+<h3>Development setup</h3>
+<ol>
+  <li>Clone the repository</li>
+  <li>Install dependencies: <code>pip install -r requirements.txt</code></li>
+  <li>Copy <code>.env.example</code> to <code>.env</code> and configure</li>
+  <li>Run locally: <code>python rpc_proxy.py</code></li>
+  <li>Submit PRs to the <code>master</code> branch</li>
+</ol>
+
+<h3>Areas for contribution</h3>
+<ul>
+  <li>Additional DEX router decoders (decode swap calldata from new aggregators)</li>
+  <li>Multi-chain support (Arbitrum, Optimism, Base RPC proxying)</li>
+  <li>Dashboard improvements and new data visualizations</li>
+  <li>Documentation improvements and translations</li>
+  <li>Security reviews and vulnerability reports</li>
+</ul>
+
+<div style="margin-top:80px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.05);text-align:center">
+  <p style="font-size:13px;color:var(--t3)">&copy; 2026 Reclaim Protocol &middot; <a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank" style="color:var(--t3)">GitHub</a> &middot; <a href="mailto:contact@reclaimfi.xyz" style="color:var(--t3)">Contact</a></p>
+</div>
+
+</main>
+</div>
+
+<script>
+// Active sidebar link on scroll
+const sections = document.querySelectorAll('h2[id]');
+const navLinks = document.querySelectorAll('.sb-link');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const top = section.offsetTop - 100;
+    if (pageYOffset >= top) current = section.getAttribute('id');
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+}, { passive: true });
+</script>
+</body>
+</html>
