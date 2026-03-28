@@ -6,6 +6,7 @@ engagement opportunities. Implements natural delay to avoid looking
 like a bot farm.
 """
 
+import asyncio
 import logging
 import random
 import time
@@ -153,22 +154,23 @@ def scan_reddit(
     return results
 
 
-def scan_twitter(
+async def scan_twitter(
     queries: list[str] | None = None,
     max_results_per_query: int = 20,
 ) -> list[MonitorResult]:
-    """Scan Twitter for tweets matching keyword queries.
+    """Scan Twitter for tweets matching keyword queries via twikit.
 
-    Requires Twitter Bearer Token. Returns empty list if not configured.
+    Requires TWITTER_USERNAME + TWITTER_PASSWORD. Returns empty list if
+    not configured.
     """
-    if not config.TWITTER_BEARER_TOKEN:
-        logger.warning("Twitter Bearer Token not set — skipping scan_twitter")
+    if not config.TWITTER_USERNAME or not config.TWITTER_PASSWORD:
+        logger.warning("Twitter credentials not set — skipping scan_twitter")
         return []
 
     try:
-        import tweepy
+        from twikit import Client as TwikitClient
     except ImportError:
-        logger.error("tweepy not installed — cannot scan Twitter")
+        logger.error("twikit not installed — cannot scan Twitter")
         return []
 
     if queries is None:
@@ -180,49 +182,63 @@ def scan_twitter(
     seen_ids: set[str] = set()
 
     try:
-        client = tweepy.Client(bearer_token=config.TWITTER_BEARER_TOKEN)
+        import os
+        client = TwikitClient("en-US")
+        cookie_path = config.TWITTER_COOKIES_PATH
+
+        # Try loading cookies, fall back to login
+        if os.path.isfile(cookie_path):
+            try:
+                client.load_cookies(cookie_path)
+            except Exception:
+                await client.login(
+                    auth_info_1=config.TWITTER_USERNAME,
+                    auth_info_2=config.TWITTER_EMAIL,
+                    password=config.TWITTER_PASSWORD,
+                )
+                os.makedirs(os.path.dirname(cookie_path), exist_ok=True)
+                client.save_cookies(cookie_path)
+        else:
+            await client.login(
+                auth_info_1=config.TWITTER_USERNAME,
+                auth_info_2=config.TWITTER_EMAIL,
+                password=config.TWITTER_PASSWORD,
+            )
+            os.makedirs(os.path.dirname(cookie_path), exist_ok=True)
+            client.save_cookies(cookie_path)
 
         for query in queries:
             try:
-                # Exclude retweets for cleaner results
-                search_query = f'"{query}" -is:retweet lang:en'
-                resp = client.search_recent_tweets(
-                    query=search_query,
-                    max_results=min(max_results_per_query, 100),
-                    tweet_fields=["created_at", "author_id", "public_metrics"],
-                )
+                tweet_results = await client.search_tweet(query, product="Latest", count=max_results_per_query)
 
-                if not resp.data:
-                    continue
-
-                for tweet in resp.data:
-                    if tweet.id in seen_ids:
+                for tweet in tweet_results:
+                    tid = str(tweet.id)
+                    if tid in seen_ids:
                         continue
-                    seen_ids.add(str(tweet.id))
+                    seen_ids.add(tid)
 
                     intent = _classify_intent(query)
-                    metrics = tweet.public_metrics or {}
+                    screen_name = getattr(tweet.user, "screen_name", "unknown") if tweet.user else "unknown"
                     results.append(
                         MonitorResult(
                             platform="twitter",
-                            post_id=str(tweet.id),
-                            text=tweet.text,
+                            post_id=tid,
+                            text=tweet.text or "",
                             keyword=query,
                             intent_level=intent,
-                            url=f"https://twitter.com/i/web/status/{tweet.id}",
-                            author=str(tweet.author_id),
-                            created_utc=tweet.created_at.timestamp() if tweet.created_at else 0,
-                            score=metrics.get("like_count", 0),
+                            url=f"https://twitter.com/{screen_name}/status/{tid}",
+                            author=screen_name,
+                            created_utc=0,
+                            score=getattr(tweet, "favorite_count", 0) or 0,
                             metadata={
-                                "retweet_count": metrics.get("retweet_count", 0),
-                                "reply_count": metrics.get("reply_count", 0),
+                                "retweet_count": getattr(tweet, "retweet_count", 0) or 0,
                             },
                         )
                     )
             except Exception as exc:
                 logger.error("Twitter search error for '%s': %s", query, exc)
             # Respect rate limits
-            time.sleep(1)
+            await asyncio.sleep(2)
 
     except Exception as exc:
         logger.error("Twitter connection failed: %s", exc)
@@ -231,7 +247,7 @@ def scan_twitter(
     return results
 
 
-def get_high_intent_posts() -> list[MonitorResult]:
+async def get_high_intent_posts() -> list[MonitorResult]:
     """Convenience: scan all platforms for HIGH-intent keyword matches only.
 
     These are posts from users who are actively experiencing MEV problems
@@ -243,7 +259,7 @@ def get_high_intent_posts() -> list[MonitorResult]:
     reddit_results = scan_reddit(keywords=high_keywords)
     results.extend(reddit_results)
 
-    twitter_results = scan_twitter(queries=high_keywords)
+    twitter_results = await scan_twitter(queries=high_keywords)
     results.extend(twitter_results)
 
     # Sort by recency (newest first)

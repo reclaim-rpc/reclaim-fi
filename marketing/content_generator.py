@@ -220,3 +220,49 @@ def generate_content(
         json.dumps(result, indent=2)[:500],
     )
     return result
+
+
+# ---------------------------------------------------------------------------
+# CLI entry point (for n8n Execute Command nodes)
+# ---------------------------------------------------------------------------
+if __name__ == "__main__":
+    import argparse
+    import random
+    import sys
+
+    logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+
+    parser = argparse.ArgumentParser(description="Reclaim content generator")
+    parser.add_argument(
+        "--platform",
+        choices=list(PLATFORM_SPECS.keys()),
+        required=True,
+        help="Target platform",
+    )
+    parser.add_argument(
+        "--angle",
+        choices=list(ANGLE_PROMPTS.keys()),
+        default=None,
+        help="Content angle (random if omitted)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Fetch stats and print prompt without calling Anthropic",
+    )
+    args = parser.parse_args()
+
+    angle = args.angle or random.choice(list(ANGLE_PROMPTS.keys()))
+    stats = fetch_stats()
+
+    if args.dry_run:
+        print(json.dumps({
+            "mode": "dry-run",
+            "platform": args.platform,
+            "angle": angle,
+            "stats": stats,
+            "prompt_preview": ANGLE_PROMPTS[angle][:200],
+        }, indent=2))
+    else:
+        result = generate_content(args.platform, angle, stats)
+        print(json.dumps(result, indent=2))

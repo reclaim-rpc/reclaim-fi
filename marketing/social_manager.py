@@ -6,7 +6,10 @@ If credentials for a platform are not configured the manager reports that
 via ``is_configured()`` and all posting methods become safe no-ops.
 """
 
+import asyncio
 import logging
+import os
+import random
 import time
 from typing import Any
 
@@ -16,125 +19,205 @@ logger = logging.getLogger(__name__)
 
 
 # ===================================================================
-# Twitter / X
+# Twitter / X  (twikit — free cookie-based auth, no paid API)
 # ===================================================================
 class TwitterManager:
-    """Post tweets, threads, monitor mentions via tweepy."""
+    """Post tweets, search, and engage via twikit (unofficial API)."""
 
     def __init__(self) -> None:
-        self._api = None
         self._client = None
+        self._logged_in = False
+        self._tweets_today: list[float] = []  # timestamps of tweets posted today
+        self._last_tweet_time: float = 0.0
 
         if not self.is_configured():
             logger.warning("Twitter credentials not set — TwitterManager disabled")
             return
 
         try:
-            import tweepy
-
-            auth = tweepy.OAuth1UserHandler(
-                config.TWITTER_API_KEY,
-                config.TWITTER_API_SECRET,
-                config.TWITTER_ACCESS_TOKEN,
-                config.TWITTER_ACCESS_TOKEN_SECRET,
-            )
-            self._api = tweepy.API(auth, wait_on_rate_limit=True)
-            self._client = tweepy.Client(
-                bearer_token=config.TWITTER_BEARER_TOKEN,
-                consumer_key=config.TWITTER_API_KEY,
-                consumer_secret=config.TWITTER_API_SECRET,
-                access_token=config.TWITTER_ACCESS_TOKEN,
-                access_token_secret=config.TWITTER_ACCESS_TOKEN_SECRET,
-                wait_on_rate_limit=True,
-            )
-            logger.info("TwitterManager initialized")
+            from twikit import Client
+            self._client = Client("en-US")
+            self._try_load_cookies()
+            logger.info("TwitterManager initialized (twikit)")
         except Exception as exc:
             logger.error("Failed to initialize TwitterManager: %s", exc)
 
     # ------------------------------------------------------------------
     def is_configured(self) -> bool:
         return bool(
-            config.TWITTER_API_KEY
-            and config.TWITTER_API_SECRET
-            and config.TWITTER_ACCESS_TOKEN
-            and config.TWITTER_ACCESS_TOKEN_SECRET
+            config.TWITTER_USERNAME
+            and config.TWITTER_PASSWORD
         )
 
     # ------------------------------------------------------------------
-    def post_tweet(self, text: str) -> dict[str, Any] | None:
-        """Post a single tweet. Returns the tweet data or None."""
+    def _try_load_cookies(self) -> None:
+        """Try loading saved cookies. Fall back to fresh login if expired."""
+        if not self._client:
+            return
+        cookie_path = config.TWITTER_COOKIES_PATH
+        if os.path.isfile(cookie_path):
+            try:
+                self._client.load_cookies(cookie_path)
+                self._logged_in = True
+                logger.info("Loaded Twitter cookies from %s", cookie_path)
+                return
+            except Exception as exc:
+                logger.warning("Saved cookies invalid, will re-login: %s", exc)
+        # No cookies or invalid — need login
+        self._logged_in = False
+
+    # ------------------------------------------------------------------
+    async def _ensure_login(self) -> bool:
+        """Ensure we have a valid session. Login if needed."""
+        if not self._client:
+            return False
+        if self._logged_in:
+            return True
+        try:
+            await self._client.login(
+                auth_info_1=config.TWITTER_USERNAME,
+                auth_info_2=config.TWITTER_EMAIL,
+                password=config.TWITTER_PASSWORD,
+            )
+            self._client._ui_metrics = True
+            os.makedirs(os.path.dirname(config.TWITTER_COOKIES_PATH), exist_ok=True)
+            self._client.save_cookies(config.TWITTER_COOKIES_PATH)
+            self._logged_in = True
+            logger.info("Twitter login successful, cookies saved")
+            return True
+        except Exception as exc:
+            logger.error("Twitter login failed: %s", exc)
+            return False
+
+    # ------------------------------------------------------------------
+    def _check_rate_limit(self) -> bool:
+        """Check if we can post (max 3/day, min 2h between tweets)."""
+        now = time.time()
+        # Prune old entries (keep only last 24h)
+        cutoff = now - 86400
+        self._tweets_today = [t for t in self._tweets_today if t > cutoff]
+
+        if len(self._tweets_today) >= config.TWITTER_MAX_TWEETS_PER_DAY:
+            logger.warning("Rate limit: %d tweets today (max %d)",
+                           len(self._tweets_today), config.TWITTER_MAX_TWEETS_PER_DAY)
+            return False
+
+        if self._last_tweet_time and (now - self._last_tweet_time) < config.TWITTER_MIN_INTERVAL_SECONDS:
+            remaining = config.TWITTER_MIN_INTERVAL_SECONDS - (now - self._last_tweet_time)
+            logger.warning("Rate limit: must wait %.0f more seconds", remaining)
+            return False
+
+        return True
+
+    # ------------------------------------------------------------------
+    def _record_tweet(self) -> None:
+        """Record that a tweet was posted for rate limiting."""
+        now = time.time()
+        self._tweets_today.append(now)
+        self._last_tweet_time = now
+
+    # ------------------------------------------------------------------
+    @staticmethod
+    def jitter_seconds() -> float:
+        """Gaussian jitter ±15 minutes for scheduled posts."""
+        return random.gauss(0, 900)
+
+    # ------------------------------------------------------------------
+    async def post_tweet(self, text: str) -> dict[str, Any] | None:
+        """Post a single tweet. Returns tweet info or None."""
         if not self._client:
             logger.warning("Twitter not configured — skipping post_tweet")
             return None
+        if not self._check_rate_limit():
+            return None
+        if not await self._ensure_login():
+            return None
         try:
-            resp = self._client.create_tweet(text=text)
-            logger.info("Posted tweet id=%s", resp.data["id"])
-            return resp.data
+            result = await self._client.create_tweet(text=text)
+            self._record_tweet()
+            tweet_id = getattr(result, "id", str(result))
+            logger.info("Posted tweet id=%s", tweet_id)
+            return {"id": tweet_id, "text": text}
         except Exception as exc:
             logger.error("Failed to post tweet: %s", exc)
+            # Invalidate session on auth errors
+            if "401" in str(exc) or "403" in str(exc):
+                self._logged_in = False
             return None
 
     # ------------------------------------------------------------------
-    def post_thread(self, tweets: list[str]) -> list[dict[str, Any]]:
-        """Post a thread of tweets (each replies to the previous).
-
-        Returns a list of tweet data dicts for the tweets that succeeded.
-        """
+    async def post_thread(self, tweets: list[str]) -> list[dict[str, Any]]:
+        """Post a thread (each tweet replies to the previous)."""
         if not self._client:
             logger.warning("Twitter not configured — skipping post_thread")
+            return []
+        if not self._check_rate_limit():
+            return []
+        if not await self._ensure_login():
             return []
 
         posted: list[dict[str, Any]] = []
         reply_to: str | None = None
         for idx, text in enumerate(tweets):
             try:
-                kwargs: dict[str, Any] = {"text": text}
                 if reply_to:
-                    kwargs["in_reply_to_tweet_id"] = reply_to
-                resp = self._client.create_tweet(**kwargs)
-                tweet_data = resp.data
-                posted.append(tweet_data)
-                reply_to = tweet_data["id"]
-                logger.info("Posted thread tweet %d/%d id=%s", idx + 1, len(tweets), reply_to)
+                    result = await self._client.create_tweet(text=text, reply_to=reply_to)
+                else:
+                    result = await self._client.create_tweet(text=text)
+                tweet_id = getattr(result, "id", str(result))
+                posted.append({"id": tweet_id, "text": text})
+                reply_to = tweet_id
+                logger.info("Thread tweet %d/%d id=%s", idx + 1, len(tweets), tweet_id)
                 if idx < len(tweets) - 1:
-                    time.sleep(2)  # Small delay between thread tweets
+                    await asyncio.sleep(3)
             except Exception as exc:
-                logger.error("Failed to post thread tweet %d: %s", idx + 1, exc)
+                logger.error("Thread tweet %d failed: %s", idx + 1, exc)
                 break
+
+        if posted:
+            self._record_tweet()
         return posted
 
     # ------------------------------------------------------------------
-    def monitor_mentions(self, since_id: str | None = None) -> list[dict[str, Any]]:
-        """Fetch recent mentions. Returns list of mention dicts."""
+    async def search_tweets(self, query: str, count: int = 10) -> list[dict[str, Any]]:
+        """Search for recent tweets matching a query."""
         if not self._client:
             return []
+        if not await self._ensure_login():
+            return []
         try:
-            resp = self._client.get_users_mentions(
-                id=self._client.get_me().data.id,
-                since_id=since_id,
-                max_results=20,
-                tweet_fields=["created_at", "author_id", "conversation_id"],
-            )
-            mentions = [dict(t) for t in (resp.data or [])]
-            logger.info("Fetched %d mentions", len(mentions))
-            return mentions
+            results = await self._client.search_tweet(query, product="Latest", count=count)
+            tweets = []
+            for tweet in results:
+                tweets.append({
+                    "id": tweet.id,
+                    "text": tweet.text,
+                    "user": getattr(tweet.user, "screen_name", "unknown") if tweet.user else "unknown",
+                    "created_at": str(getattr(tweet, "created_at", "")),
+                })
+            logger.info("Twitter search '%s': %d results", query, len(tweets))
+            return tweets
         except Exception as exc:
-            logger.error("Failed to fetch mentions: %s", exc)
+            logger.error("Twitter search failed for '%s': %s", query, exc)
             return []
 
     # ------------------------------------------------------------------
-    def respond_to_mention(self, mention_id: str, text: str) -> dict[str, Any] | None:
+    async def reply_to(self, tweet_id: str, text: str) -> dict[str, Any] | None:
         """Reply to a specific tweet."""
         if not self._client:
             return None
+        if not self._check_rate_limit():
+            return None
+        if not await self._ensure_login():
+            return None
         try:
-            resp = self._client.create_tweet(
-                text=text, in_reply_to_tweet_id=mention_id
-            )
-            logger.info("Replied to mention %s with tweet %s", mention_id, resp.data["id"])
-            return resp.data
+            result = await self._client.create_tweet(text=text, reply_to=tweet_id)
+            self._record_tweet()
+            rid = getattr(result, "id", str(result))
+            logger.info("Replied to %s with tweet %s", tweet_id, rid)
+            return {"id": rid, "text": text, "reply_to": tweet_id}
         except Exception as exc:
-            logger.error("Failed to reply to mention %s: %s", mention_id, exc)
+            logger.error("Reply to %s failed: %s", tweet_id, exc)
             return None
 
 

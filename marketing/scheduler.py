@@ -113,12 +113,11 @@ async def task_generate_content() -> None:
             try:
                 content = generate_content("twitter_thread", angle, stats)
                 if isinstance(content, list):
-                    _twitter.post_thread(content)
+                    await _twitter.post_thread(content)
                 elif isinstance(content, dict) and "raw" not in content:
-                    # Model might return a dict with tweets key
                     tweets = content.get("tweets", content.get("thread", []))
                     if tweets:
-                        _twitter.post_thread(tweets)
+                        await _twitter.post_thread(tweets)
                 logger.info("Twitter thread posted")
             except Exception as exc:
                 logger.error("Twitter content failed: %s", exc)
@@ -162,7 +161,7 @@ async def task_keyword_monitor() -> None:
     """Scan for high-intent posts and queue responses."""
     logger.info("--- TASK: Keyword Monitoring ---")
     try:
-        posts = get_high_intent_posts()
+        posts = await get_high_intent_posts()
         logger.info("Found %d high-intent posts", len(posts))
 
         stats = fetch_stats() if posts else {}
@@ -221,7 +220,7 @@ async def _send_delayed_response(platform: str, post_id: str, text: str) -> None
             _reddit.reply_to_post(post_id, text)
             logger.info("Sent delayed Reddit reply to %s", post_id)
         elif platform == "twitter" and _twitter and _twitter.is_configured():
-            _twitter.respond_to_mention(post_id, text)
+            await _twitter.reply_to(post_id, text)
             logger.info("Sent delayed Twitter reply to %s", post_id)
         else:
             logger.info(
@@ -304,7 +303,11 @@ async def run_recurring(
                 exc,
                 traceback.format_exc(),
             )
-        await asyncio.sleep(interval)
+        # ±30 min Gaussian jitter to look natural
+        jitter = random.gauss(0, 1800)
+        actual_sleep = max(interval + jitter, 60)  # never sleep less than 60s
+        logger.debug("Task '%s' next run in %.0fs (jitter=%.0fs)", name, actual_sleep, jitter)
+        await asyncio.sleep(actual_sleep)
 
 
 # ---------------------------------------------------------------------------

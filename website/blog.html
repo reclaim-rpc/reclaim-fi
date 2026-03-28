@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — Reclaim Protocol</title>
+<meta name="description" content="Insights on MEV protection, DeFi security, and the Reclaim Protocol ecosystem.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#050507;--bg3:#0d0e14;--bg4:#12131b;--ac:#00e87b;--acb:#1aff8e;--acg:rgba(0,232,123,.12);--acs:rgba(0,232,123,.06);--cy:#00b4d8;--dn:#ff4757;--t1:#eeeef0;--t2:#8b8d9a;--t3:#55576a;--t4:#3d3f50;--bd:rgba(255,255,255,.05);--bdh:rgba(255,255,255,.1);--fh:'Outfit',sans-serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;--e:cubic-bezier(.16,1,.3,1)}
+html{scroll-behavior:smooth;background:#020204}
+body{font-family:var(--fb);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.c{max-width:1200px;margin:0 auto;padding:0 clamp(24px,5vw,80px)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,9,13,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:14px 0}
+nav .c{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--fh);font-weight:700;font-size:22px;display:flex;align-items:center;gap:10px;letter-spacing:-.5px}
+.lm{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--ac),var(--cy));display:flex;align-items:center;justify-content:center}
+.lm svg{width:18px;height:18px}
+.nl{display:flex;align-items:center;gap:32px;list-style:none}
+.nl a{font-size:14px;font-weight:500;color:var(--t2);transition:color .2s}
+.nl a:hover{color:var(--t1)}
+.nl a.act{color:var(--ac)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:600;font-size:14px;border-radius:50px;border:none;cursor:pointer;transition:all .3s var(--e);padding:11px 26px;background:var(--ac);color:#050507}
+.btn:hover{background:var(--acb);transform:translateY(-1px)}
+.btn svg{width:16px;height:16px}
+
+.page-header{padding:140px 0 60px;border-bottom:1px solid var(--bd)}
+.page-header .sl{font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--ac);margin-bottom:12px}
+.page-header h1{font-family:var(--fh);font-size:clamp(36px,5vw,52px);font-weight:700;letter-spacing:-1.5px;margin-bottom:12px}
+.page-header p{font-size:17px;color:var(--t2);max-width:520px;line-height:1.6}
+
+.blog-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;padding:64px 0 120px}
+
+.blog-card{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;overflow:hidden;transition:all .4s var(--e)}
+.blog-card:hover{border-color:var(--bdh);transform:translateY(-3px)}
+.blog-card.featured{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:0}
+.card-img{aspect-ratio:16/9;background:var(--bg2);position:relative;overflow:hidden}
+.card-img .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.card-img .overlay svg{width:64px;height:64px;opacity:.15}
+.blog-card.featured .card-img{aspect-ratio:auto}
+.card-body{padding:32px}
+.card-tag{font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--ac);margin-bottom:12px}
+.card-body h2{font-family:var(--fh);font-size:22px;font-weight:600;letter-spacing:-.3px;margin-bottom:10px;line-height:1.3;transition:color .2s}
+.blog-card:hover .card-body h2{color:var(--ac)}
+.blog-card.featured .card-body h2{font-size:28px;letter-spacing:-.5px}
+.card-body p{font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:16px}
+.card-meta{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--t3)}
+.card-meta .dot{width:3px;height:3px;background:var(--t4);border-radius:50%}
+
+.coming-soon{text-align:center;padding:80px 20px;background:var(--bg3);border:1px solid var(--bd);border-radius:16px;margin-top:24px}
+.coming-soon h3{font-family:var(--fh);font-size:20px;font-weight:600;margin-bottom:8px}
+.coming-soon p{font-size:14px;color:var(--t2)}
+
+footer{border-top:1px solid var(--bd);padding:44px 0;margin-top:0}
+.ft{display:flex;justify-content:space-between;align-items:center}
+.fl{display:flex;align-items:center;gap:28px}
+.fcp{font-size:13px;color:var(--t3)}
+.fli{display:flex;gap:20px;list-style:none}
+.fli a{font-size:13px;color:var(--t3);transition:color .2s}
+.fli a:hover{color:var(--t2)}
+
+@media(max-width:900px){.nl{display:none}.blog-grid{grid-template-columns:1fr}.blog-card.featured{grid-template-columns:1fr}.ft{flex-direction:column;gap:20px;text-align:center}.fl{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<nav><div class="c">
+<a href="/" class="logo"><div class="lm"><svg viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Reclaim</a>
+<ul class="nl"><li><a href="/#problem">Problem</a></li><li><a href="/#ecosystem">Ecosystem</a></li><li><a href="/#roadmap">Roadmap</a></li><li><a href="/blog.html" class="act">Blog</a></li><li><a href="/docs.html">Docs</a></li></ul>
+<a href="/" class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Get protected</a>
+</div></nav>
+
+<div class="page-header"><div class="c">
+<div class="sl">Blog</div>
+<h1>Insights & updates</h1>
+<p>MEV research, protocol updates, and guides to protecting your Ethereum transactions.</p>
+</div></div>
+
+<div class="c">
+<div class="blog-grid">
+
+<div class="blog-card featured">
+<div class="card-img" style="background:linear-gradient(135deg,rgba(0,232,123,.08),rgba(0,180,216,.05))">
+<div class="overlay"><svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+</div>
+<div class="card-body">
+<div class="card-tag">Announcement</div>
+<h2>Introducing Reclaim: The MEV Protection Protocol</h2>
+<p>Today we launch Reclaim — a full-stack protocol that shields your Ethereum transactions from sandwich attacks and returns 80% of captured MEV directly to your wallet. Here's our vision for eliminating the invisible tax on every trade.</p>
+<div class="card-meta"><span>Reclaim Team</span><span class="dot"></span><span>March 2026</span><span class="dot"></span><span>6 min read</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="card-img" style="background:linear-gradient(135deg,rgba(255,71,87,.06),rgba(255,168,0,.04))">
+<div class="overlay"><svg viewBox="0 0 24 24" fill="none" stroke="var(--dn)" stroke-width="1" width="48" height="48"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+</div>
+<div class="card-body">
+<div class="card-tag">Education</div>
+<h2>The $1.4B invisible tax: How MEV bots steal from every Ethereum user</h2>
+<p>A deep dive into sandwich attacks, front-running, and back-running — the three techniques MEV bots use to extract value from your transactions without you knowing.</p>
+<div class="card-meta"><span>Reclaim Team</span><span class="dot"></span><span>March 2026</span><span class="dot"></span><span>8 min read</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="card-img" style="background:linear-gradient(135deg,rgba(0,232,123,.05),rgba(0,180,216,.03))">
+<div class="overlay"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cy)" stroke-width="1" width="48" height="48"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+</div>
+<div class="card-body">
+<div class="card-tag">Technical</div>
+<h2>Under the hood: How Reclaim's backrun engine works</h2>
+<p>A technical breakdown of how we capture MEV from your transactions using flash loans, cross-venue arbitrage, and real-time bundle construction. Open source and verifiable.</p>
+<div class="card-meta"><span>Reclaim Team</span><span class="dot"></span><span>March 2026</span><span class="dot"></span><span>12 min read</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="card-img" style="background:linear-gradient(135deg,rgba(168,85,247,.05),rgba(0,232,123,.03))">
+<div class="overlay"><svg viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1" width="48" height="48"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg></div>
+</div>
+<div class="card-body">
+<div class="card-tag">Guide</div>
+<h2>Earn passive ETH with the Reclaim referral program</h2>
+<p>How the on-chain referral system works, how to share your link, and realistic earnings projections based on referral activity.</p>
+<div class="card-meta"><span>Reclaim Team</span><span class="dot"></span><span>March 2026</span><span class="dot"></span><span>4 min read</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="card-img" style="background:linear-gradient(135deg,rgba(0,180,216,.06),rgba(0,232,123,.04))">
+<div class="overlay"><svg viewBox="0 0 24 24" fill="none" stroke="var(--ac)" stroke-width="1" width="48" height="48"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+</div>
+<div class="card-body">
+<div class="card-tag">Research</div>
+<h2>Flashbots Protect vs MEV Blocker vs Reclaim: A technical comparison</h2>
+<p>We benchmark three leading MEV protection solutions on rebate rates, inclusion speed, privacy guarantees, and ecosystem scope.</p>
+<div class="card-meta"><span>Reclaim Team</span><span class="dot"></span><span>Coming soon</span><span class="dot"></span><span>10 min read</span></div>
+</div>
+</div>
+
+</div>
+
+<div class="coming-soon">
+<h3>More articles coming soon</h3>
+<p>Follow us on Twitter for the latest updates and research.</p>
+</div>
+</div>
+
+<footer style="margin-top:64px"><div class="c"><div class="ft">
+<div class="fl">
+<a href="/" class="logo" style="font-size:18px"><div class="lm" style="width:28px;height:28px;border-radius:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Reclaim</a>
+<span class="fcp">&copy; 2026 Reclaim Protocol</span>
+</div>
+<ul class="fli"><li><a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank">GitHub</a></li><li><a href="mailto:contact@reclaimfi.xyz">Contact</a></li><li><a href="/docs.html">Docs</a></li></ul>
+</div></div></footer>
+
+</body>
+</html>

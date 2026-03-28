@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compare MEV Protection — Reclaim Protocol</title>
+<meta name="description" content="How Reclaim compares to Flashbots Protect, MEV Blocker, and other MEV protection solutions.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#050507;--bg3:#0d0e14;--bg4:#12131b;--ac:#00e87b;--acb:#1aff8e;--acg:rgba(0,232,123,.12);--acs:rgba(0,232,123,.06);--cy:#00b4d8;--dn:#ff4757;--wa:#ffa800;--t1:#eeeef0;--t2:#8b8d9a;--t3:#55576a;--t4:#3d3f50;--bd:rgba(255,255,255,.05);--bdh:rgba(255,255,255,.1);--fh:'Outfit',sans-serif;--fb:'DM Sans',sans-serif;--e:cubic-bezier(.16,1,.3,1)}
+html{scroll-behavior:smooth;background:#020204}
+body{font-family:var(--fb);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.c{max-width:1200px;margin:0 auto;padding:0 clamp(24px,5vw,80px)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,9,13,.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:14px 0}
+nav .c{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--fh);font-weight:700;font-size:22px;display:flex;align-items:center;gap:10px;letter-spacing:-.5px}
+.lm{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--ac),var(--cy));display:flex;align-items:center;justify-content:center}
+.lm svg{width:18px;height:18px}
+.nl{display:flex;align-items:center;gap:32px;list-style:none}
+.nl a{font-size:14px;font-weight:500;color:var(--t2);transition:color .2s}
+.nl a:hover{color:var(--t1)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:600;font-size:14px;border-radius:50px;border:none;cursor:pointer;transition:all .3s var(--e);padding:11px 26px;background:var(--ac);color:#050507}
+.btn:hover{background:var(--acb);transform:translateY(-1px)}
+.btn svg{width:16px;height:16px}
+
+.page-header{padding:140px 0 60px;border-bottom:1px solid var(--bd)}
+.page-header .sl{font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--ac);margin-bottom:12px}
+.page-header h1{font-family:var(--fh);font-size:clamp(36px,5vw,52px);font-weight:700;letter-spacing:-1.5px;margin-bottom:12px}
+.page-header p{font-size:17px;color:var(--t2);max-width:600px;line-height:1.6}
+
+.comp-table{margin:64px 0;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+thead th{font-family:var(--fh);font-size:13px;font-weight:600;letter-spacing:.5px;color:var(--t3);padding:16px 20px;text-align:left;border-bottom:1px solid var(--bdh);position:sticky;top:68px;background:var(--bg);z-index:2}
+thead th:first-child{width:200px}
+thead th.hl{color:var(--ac);background:rgba(0,232,123,.02);border-top:2px solid var(--ac);border-radius:8px 8px 0 0}
+tbody td{padding:16px 20px;border-bottom:1px solid var(--bd);font-size:14px;color:var(--t2);vertical-align:top}
+tbody td:first-child{font-weight:500;color:var(--t1);font-family:var(--fh);font-size:14px}
+tbody td.hl{background:rgba(0,232,123,.015)}
+tbody tr:hover td{background:rgba(255,255,255,.01)}
+tbody tr:hover td.hl{background:rgba(0,232,123,.03)}
+.yes{color:var(--ac)}
+.no{color:var(--dn)}
+.partial{color:var(--wa)}
+.na{color:var(--t4)}
+
+.verdict{margin:64px 0 120px}
+.verdict-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:32px}
+.verdict-card{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;padding:32px;transition:all .3s var(--e)}
+.verdict-card:hover{border-color:var(--bdh)}
+.verdict-card h3{font-family:var(--fh);font-size:18px;font-weight:600;margin-bottom:8px}
+.verdict-card .sub{font-size:13px;color:var(--ac);font-weight:500;margin-bottom:14px}
+.verdict-card p{font-size:14px;color:var(--t2);line-height:1.7}
+.verdict-card.featured{border-color:rgba(0,232,123,.2)}
+
+.cta-bar{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;padding:48px;text-align:center;margin-bottom:80px}
+.cta-bar h2{font-family:var(--fh);font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:12px}
+.cta-bar p{font-size:15px;color:var(--t2);margin-bottom:24px;max-width:480px;margin-left:auto;margin-right:auto}
+
+footer{border-top:1px solid var(--bd);padding:44px 0}
+.ft{display:flex;justify-content:space-between;align-items:center}
+.fl{display:flex;align-items:center;gap:28px}
+.fcp{font-size:13px;color:var(--t3)}
+.fli{display:flex;gap:20px;list-style:none}
+.fli a{font-size:13px;color:var(--t3);transition:color .2s}
+.fli a:hover{color:var(--t2)}
+
+@media(max-width:900px){.nl{display:none}.verdict-grid{grid-template-columns:1fr}.ft{flex-direction:column;gap:20px;text-align:center}.fl{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<nav><div class="c">
+<a href="/" class="logo"><div class="lm"><svg viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Reclaim</a>
+<ul class="nl"><li><a href="/#ecosystem">Ecosystem</a></li><li><a href="/blog.html">Blog</a></li><li><a href="/docs.html">Docs</a></li></ul>
+<a href="/" class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Get protected</a>
+</div></nav>
+
+<div class="page-header"><div class="c">
+<div class="sl">Compare</div>
+<h1>How Reclaim compares</h1>
+<p>An honest comparison of leading MEV protection solutions. Different approaches to the same problem — pick the one that fits your needs.</p>
+</div></div>
+
+<div class="c">
+<div class="comp-table">
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Flashbots Protect</th>
+<th>MEV Blocker</th>
+<th class="hl">Reclaim</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Sandwich protection</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="hl yes">Yes</td></tr>
+<tr><td>Front-run protection</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="hl yes">Yes</td></tr>
+<tr><td>Revert protection</td><td class="yes">Yes</td><td class="yes">Yes (select endpoints)</td><td class="hl yes">Yes</td></tr>
+<tr><td>MEV rebates</td><td class="partial">Partial (refund model)</td><td class="yes">Yes — 90% backrun value</td><td class="hl yes">Yes — 80% captured MEV</td></tr>
+<tr><td>Rebate mechanism</td><td>Gas refund + MEV-Share</td><td>Searcher auction (OFA)</td><td class="hl">Active capture + on-chain contract</td></tr>
+<tr><td>On-chain verifiable rebates</td><td class="no">No (off-chain refund)</td><td class="partial">Partial</td><td class="hl yes">Yes — public smart contract</td></tr>
+<tr><td>Referral program</td><td class="no">No</td><td class="no">No</td><td class="hl yes">Yes — 5% of referral rebates</td></tr>
+<tr><td>DEX aggregator</td><td class="no">No</td><td class="no">No (CoW Swap separate)</td><td class="hl partial">Q2 2026</td></tr>
+<tr><td>Browser wallet</td><td class="no">No</td><td class="no">No</td><td class="hl partial">Q3 2026</td></tr>
+<tr><td>Own block builder</td><td class="yes">BuilderNet</td><td class="no">No (uses third-party)</td><td class="hl partial">Q4 2026</td></tr>
+<tr><td>Open source</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="hl yes">Yes</td></tr>
+<tr><td>Cost to user</td><td>Free</td><td>Free</td><td class="hl">Free</td></tr>
+<tr><td>MetaMask one-click setup</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="hl yes">Yes</td></tr>
+<tr><td>Builder coverage</td><td>Flashbots relay only</td><td>All major builders</td><td class="hl">7 relays, 95%+ coverage</td></tr>
+<tr><td>Multi-chain</td><td class="no">Ethereum only</td><td class="no">Ethereum only</td><td class="hl partial">Ethereum now, L2s planned</td></tr>
+<tr><td>Maintained by</td><td>Flashbots</td><td>CoW Protocol / SMG</td><td class="hl">Reclaim Protocol (independent)</td></tr>
+<tr><td>Product scope</td><td>RPC endpoint</td><td>RPC endpoint</td><td class="hl">Full protocol ecosystem</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="verdict">
+<h2 style="font-family:var(--fh);font-size:28px;font-weight:700;letter-spacing:-.5px">When to use each</h2>
+<div class="verdict-grid">
+<div class="verdict-card">
+<h3>Flashbots Protect</h3>
+<div class="sub">Best for simplicity</div>
+<p>Backed by the Flashbots team who pioneered MEV protection. Solid privacy guarantees and revert protection. Best if you want the most established name in the space and don't need active MEV rebates.</p>
+</div>
+<div class="verdict-card">
+<h3>MEV Blocker</h3>
+<div class="sub">Best for maximum rebate percentage</div>
+<p>Highest rebate rate at 90% of backrun value. Built by CoW Protocol with a proven OFA (Order Flow Auction) mechanism. Best if maximizing the raw rebate percentage is your priority.</p>
+</div>
+<div class="verdict-card featured">
+<h3>Reclaim</h3>
+<div class="sub">Best for long-term ecosystem value</div>
+<p>Active MEV capture (not just passive refunds), on-chain verifiable rebates, referral program, and a roadmap to DEX + wallet + builder. Best if you want a growing protocol that returns more value over time.</p>
+</div>
+</div>
+</div>
+
+<div class="cta-bar">
+<h2>Ready to try Reclaim?</h2>
+<p>One click to protect your wallet. Zero fees. 80% MEV rebates. Open source and verifiable.</p>
+<a href="/" class="btn" style="font-size:15px;padding:14px 36px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Protect my wallet</a>
+</div>
+</div>
+
+<footer><div class="c"><div class="ft">
+<div class="fl">
+<a href="/" class="logo" style="font-size:18px"><div class="lm" style="width:28px;height:28px;border-radius:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Reclaim</a>
+<span class="fcp">&copy; 2026 Reclaim Protocol</span>
+</div>
+<ul class="fli"><li><a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank">GitHub</a></li><li><a href="mailto:contact@reclaimfi.xyz">Contact</a></li><li><a href="/docs.html">Docs</a></li></ul>
+</div></div></footer>
+
+</body>
+</html>

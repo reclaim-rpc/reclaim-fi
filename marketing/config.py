@@ -14,23 +14,25 @@ load_dotenv()
 # Anthropic
 # ---------------------------------------------------------------------------
 ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
-ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"
+ANTHROPIC_MODEL: str = "claude-haiku-4-5-20251001"
 
 # ---------------------------------------------------------------------------
 # Reclaim Fi endpoints
 # ---------------------------------------------------------------------------
-STATS_API_URL: str = "https://rpc.reclaimfi.xyz/stats"
+STATS_API_URL: str = "http://localhost:8550/stats"
+HEALTH_API_URL: str = "http://localhost:8550/health"
 SITE_URL: str = "https://reclaimfi.xyz"
 RPC_URL: str = "https://rpc.reclaimfi.xyz"
 
 # ---------------------------------------------------------------------------
-# Twitter / X  (OAuth 1.0a + Bearer)
+# Twitter / X  (twikit — cookie-based, no paid API needed)
 # ---------------------------------------------------------------------------
-TWITTER_API_KEY: str = os.getenv("TWITTER_API_KEY", "")
-TWITTER_API_SECRET: str = os.getenv("TWITTER_API_SECRET", "")
-TWITTER_ACCESS_TOKEN: str = os.getenv("TWITTER_ACCESS_TOKEN", "")
-TWITTER_ACCESS_TOKEN_SECRET: str = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "")
-TWITTER_BEARER_TOKEN: str = os.getenv("TWITTER_BEARER_TOKEN", "")
+TWITTER_USERNAME: str = os.getenv("TWITTER_USERNAME", "")
+TWITTER_PASSWORD: str = os.getenv("TWITTER_PASSWORD", "")
+TWITTER_EMAIL: str = os.getenv("TWITTER_EMAIL", "")
+TWITTER_COOKIES_PATH: str = "/root/reclaim-fi/marketing/data/twitter_cookies.json"
+TWITTER_MAX_TWEETS_PER_DAY: int = 3
+TWITTER_MIN_INTERVAL_SECONDS: int = 7200  # 2 hours
 
 # ---------------------------------------------------------------------------
 # Reddit  (PRAW)

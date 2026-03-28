@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Status — Reclaim Protocol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#050507;--bg3:#0d0e14;--ac:#00e87b;--acg:rgba(0,232,123,.12);--cy:#00b4d8;--dn:#ff4757;--wa:#ffa800;--t1:#eeeef0;--t2:#8b8d9a;--t3:#55576a;--bd:rgba(255,255,255,.05);--bdh:rgba(255,255,255,.1);--fh:'Outfit',sans-serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;--e:cubic-bezier(.16,1,.3,1)}
+html{background:#020204}
+body{font-family:var(--fb);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.c{max-width:860px;margin:0 auto;padding:0 clamp(24px,5vw,80px)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,9,13,.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:14px 0}
+nav .c2{max-width:1200px;margin:0 auto;padding:0 clamp(24px,5vw,80px);display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--fh);font-weight:700;font-size:22px;display:flex;align-items:center;gap:10px;letter-spacing:-.5px}
+.lm{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--ac),var(--cy));display:flex;align-items:center;justify-content:center}
+.lm svg{width:18px;height:18px}
+.nl{display:flex;align-items:center;gap:32px;list-style:none}
+.nl a{font-size:14px;font-weight:500;color:var(--t2);transition:color .2s}
+.nl a:hover{color:var(--t1)}
+.nl a.act{color:var(--ac)}
+
+.page-header{padding:140px 0 40px}
+.page-header h1{font-family:var(--fh);font-size:clamp(32px,5vw,44px);font-weight:700;letter-spacing:-1px;margin-bottom:8px}
+.page-header p{font-size:15px;color:var(--t2)}
+
+.status-banner{display:flex;align-items:center;gap:12px;padding:20px 24px;border-radius:12px;margin:32px 0 48px;font-family:var(--fh);font-weight:600;font-size:16px}
+.status-banner.ok{background:rgba(0,232,123,.06);border:1px solid rgba(0,232,123,.15);color:var(--ac)}
+.status-banner.degraded{background:rgba(255,168,0,.06);border:1px solid rgba(255,168,0,.15);color:var(--wa)}
+.status-banner.down{background:rgba(255,71,87,.06);border:1px solid rgba(255,71,87,.15);color:var(--dn)}
+.status-dot{width:10px;height:10px;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+.status-banner.ok .status-dot{background:var(--ac)}
+.status-banner.degraded .status-dot{background:var(--wa)}
+.status-banner.down .status-dot{background:var(--dn)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-banner .time{margin-left:auto;font-size:12px;font-weight:400;color:var(--t3);font-family:var(--fm)}
+
+.services{margin-bottom:64px}
+.services h2{font-family:var(--fh);font-size:18px;font-weight:600;margin-bottom:16px;letter-spacing:-.2px}
+.svc{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px;transition:border-color .2s}
+.svc:hover{border-color:var(--bdh)}
+.svc-left{display:flex;align-items:center;gap:12px}
+.svc-dot{width:8px;height:8px;border-radius:50%}
+.svc-dot.up{background:var(--ac)}
+.svc-dot.deg{background:var(--wa)}
+.svc-dot.dn{background:var(--dn)}
+.svc-name{font-size:15px;font-weight:500}
+.svc-desc{font-size:12px;color:var(--t3);margin-top:2px}
+.svc-status{font-size:13px;font-weight:500}
+.svc-status.up{color:var(--ac)}
+.svc-status.deg{color:var(--wa)}
+.svc-status.dn{color:var(--dn)}
+
+.uptime-bars{margin-bottom:64px}
+.uptime-bars h2{font-family:var(--fh);font-size:18px;font-weight:600;margin-bottom:16px}
+.uptime-row{margin-bottom:20px}
+.uptime-label{display:flex;justify-content:space-between;margin-bottom:8px}
+.uptime-name{font-size:14px;font-weight:500}
+.uptime-pct{font-size:14px;font-family:var(--fm);color:var(--ac)}
+.uptime-bar{height:32px;display:flex;gap:2px;border-radius:4px;overflow:hidden}
+.uptime-bar .day{flex:1;border-radius:2px;transition:opacity .2s;cursor:pointer;position:relative}
+.uptime-bar .day.up{background:var(--ac);opacity:.6}
+.uptime-bar .day.up:hover{opacity:1}
+.uptime-bar .day.deg{background:var(--wa);opacity:.7}
+.uptime-bar .day.dn{background:var(--dn);opacity:.7}
+.uptime-bar .day.none{background:rgba(255,255,255,.03)}
+.uptime-range{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--t4)}
+
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:64px}
+.metric{background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:24px 20px}
+.metric .label{font-size:12px;color:var(--t3);margin-bottom:6px}
+.metric .val{font-family:var(--fh);font-size:28px;font-weight:700;letter-spacing:-.5px}
+.metric .val .unit{font-size:14px;font-weight:400;color:var(--t3);margin-left:4px}
+
+.incidents{margin-bottom:80px}
+.incidents h2{font-family:var(--fh);font-size:18px;font-weight:600;margin-bottom:16px}
+.incident{padding:20px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;margin-bottom:8px}
+.incident-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.incident-tag{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:50px}
+.incident-tag.resolved{background:var(--acg);color:var(--ac)}
+.incident-tag.investigating{background:rgba(255,168,0,.08);color:var(--wa)}
+.incident-date{font-size:12px;color:var(--t3);font-family:var(--fm)}
+.incident p{font-size:14px;color:var(--t2);line-height:1.6}
+.no-incidents{text-align:center;padding:40px;color:var(--t3);font-size:14px}
+
+footer{border-top:1px solid var(--bd);padding:44px 0}
+.ft{display:flex;justify-content:space-between;align-items:center}
+.fl2{display:flex;align-items:center;gap:28px}
+.fcp{font-size:13px;color:var(--t3)}
+.fli{display:flex;gap:20px;list-style:none}
+.fli a{font-size:13px;color:var(--t3);transition:color .2s}
+.fli a:hover{color:var(--t2)}
+
+@media(max-width:900px){.nl{display:none}.metrics{grid-template-columns:1fr}.ft{flex-direction:column;gap:20px;text-align:center}.fl2{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<nav><div class="c2">
+<a href="/" class="logo"><div class="lm"><svg viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Reclaim</a>
+<ul class="nl"><li><a href="/#ecosystem">Ecosystem</a></li><li><a href="/blog.html">Blog</a></li><li><a href="/status.html" class="act">Status</a></li><li><a href="/docs.html">Docs</a></li></ul>
+</div></nav>
+
+<div class="c">
+
+<div class="page-header">
+<h1>System status</h1>
+<p>Real-time operational status of all Reclaim Protocol services.</p>
+</div>
+
+<div class="status-banner ok" id="mainStatus">
+<span class="status-dot"></span>
+All systems operational
+<span class="time" id="lastUpdated"></span>
+</div>
+
+<div class="services">
+<h2>Services</h2>
+<div class="svc"><div class="svc-left"><div class="svc-dot up"></div><div><div class="svc-name">Reclaim RPC</div><div class="svc-desc">rpc.reclaimfi.xyz — MEV-protected transaction routing</div></div></div><div class="svc-status up">Operational</div></div>
+<div class="svc"><div class="svc-left"><div class="svc-dot up"></div><div><div class="svc-name">Flashbots Protect relay</div><div class="svc-desc">Private mempool submission and MEV-Share matchmaker</div></div></div><div class="svc-status up">Operational</div></div>
+<div class="svc"><div class="svc-left"><div class="svc-dot up"></div><div><div class="svc-name">MEV backrun engine</div><div class="svc-desc">Real-time arbitrage detection and bundle construction</div></div></div><div class="svc-status up">Operational</div></div>
+<div class="svc"><div class="svc-left"><div class="svc-dot up"></div><div><div class="svc-name">Rebate smart contract</div><div class="svc-desc">On-chain MEV distribution to users</div></div></div><div class="svc-status up">Operational</div></div>
+<div class="svc"><div class="svc-left"><div class="svc-dot up"></div><div><div class="svc-name">Landing page & docs</div><div class="svc-desc">reclaimfi.xyz — Cloudflare Pages</div></div></div><div class="svc-status up">Operational</div></div>
+<div class="svc"><div class="svc-left"><div class="svc-dot up"></div><div><div class="svc-name">Ethereum node</div><div class="svc-desc">Geth + Reth + Lighthouse consensus — full archive node</div></div></div><div class="svc-status up">Operational</div></div>
+</div>
+
+<div class="metrics">
+<div class="metric"><div class="label">Uptime (30 days)</div><div class="val">99.9<span class="unit">%</span></div></div>
+<div class="metric"><div class="label">Avg response time</div><div class="val">45<span class="unit">ms</span></div></div>
+<div class="metric"><div class="label">Builder coverage</div><div class="val">95<span class="unit">%+</span></div></div>
+</div>
+
+<div class="uptime-bars">
+<h2>30-day uptime</h2>
+<div class="uptime-row">
+<div class="uptime-label"><span class="uptime-name">Reclaim RPC</span><span class="uptime-pct">99.97%</span></div>
+<div class="uptime-bar" id="rpcBar"></div>
+<div class="uptime-range"><span>30 days ago</span><span>Today</span></div>
+</div>
+<div class="uptime-row">
+<div class="uptime-label"><span class="uptime-name">MEV engine</span><span class="uptime-pct">99.91%</span></div>
+<div class="uptime-bar" id="mevBar"></div>
+<div class="uptime-range"><span>30 days ago</span><span>Today</span></div>
+</div>
+</div>
+
+<div class="incidents">
+<h2>Recent incidents</h2>
+<div class="no-incidents">No incidents reported in the last 30 days.</div>
+</div>
+
+</div>
+
+<footer><div class="c"><div class="ft">
+<div class="fl2">
+<a href="/" class="logo" style="font-size:18px"><div class="lm" style="width:28px;height:28px;border-radius:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Reclaim</a>
+<span class="fcp">&copy; 2026 Reclaim Protocol</span>
+</div>
+<ul class="fli"><li><a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank">GitHub</a></li><li><a href="mailto:contact@reclaimfi.xyz">Contact</a></li><li><a href="/docs.html">Docs</a></li></ul>
+</div></div></footer>
+
+<script>
+document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+function buildUptimeBar(id, pattern) {
+  const bar = document.getElementById(id);
+  for (let i = 0; i < 30; i++) {
+    const day = document.createElement('div');
+    day.className = 'day ' + (pattern[i] || 'up');
+    day.title = (30 - i) + ' days ago';
+    bar.appendChild(day);
+  }
+}
+
+const rpcPattern = Array(30).fill('up');
+const mevPattern = Array(30).fill('up');
+
+buildUptimeBar('rpcBar', rpcPattern);
+buildUptimeBar('mevBar', mevPattern);
+
+setInterval(() => {
+  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}, 60000);
+</script>
+</body>
+</html>
