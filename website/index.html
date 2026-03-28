@@ -1,532 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reclaim — MEV-Protected Ethereum RPC with Rebates</title>
-  <meta name="description" content="Stop losing money to MEV. Reclaim protects your Ethereum transactions and shares 80% of captured value back to you. Free forever.">
-  <meta property="og:title" content="Reclaim — Stop Losing Money to MEV">
-  <meta property="og:description" content="MEV-protected Ethereum RPC that pays you back. Add to MetaMask in 30 seconds.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://reclaimfi.xyz">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Reclaim — Stop Losing Money to MEV">
-  <meta name="twitter:description" content="MEV-protected Ethereum RPC that pays you back.">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reclaim — The MEV Protection Protocol</title>
+<meta name="description" content="Reclaim is a full-stack MEV protection protocol. Shield transactions, earn rebates, trade through MEV-aware products.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08090d;--bg2:#050507;--bg3:#0d0e14;--bg4:#12131b;--bg5:#1a1b25;--ac:#00e87b;--acb:#1aff8e;--acg:rgba(0,232,123,.12);--acs:rgba(0,232,123,.06);--cy:#00b4d8;--cyg:rgba(0,180,216,.12);--dn:#ff4757;--dng:rgba(255,71,87,.08);--t1:#eeeef0;--t2:#8b8d9a;--t3:#55576a;--t4:#3d3f50;--bd:rgba(255,255,255,.05);--bdh:rgba(255,255,255,.1);--bda:rgba(0,232,123,.15);--fh:'Outfit',sans-serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;--e:cubic-bezier(.16,1,.3,1)}
+html{scroll-behavior:smooth;background:#020204}
+body{font-family:var(--fb);background:var(--bg);color:var(--t1);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.c{max-width:1200px;margin:0 auto;padding:0 clamp(24px,5vw,80px)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 0;transition:all .4s var(--e)}
+nav.s{background:rgba(8,9,13,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);padding:14px 0}
+nav .c{display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--fh);font-weight:700;font-size:22px;display:flex;align-items:center;gap:10px;letter-spacing:-.5px}
+.lm{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--ac),var(--cy));display:flex;align-items:center;justify-content:center;transition:transform .3s var(--e)}
+.logo:hover .lm{transform:rotate(-8deg) scale(1.05)}
+.lm svg{width:18px;height:18px}
+.nl{display:flex;align-items:center;gap:32px;list-style:none}
+.nl a{font-size:14px;font-weight:500;color:var(--t2);transition:color .2s;letter-spacing:.15px}
+.nl a:hover{color:var(--t1)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--fh);font-weight:600;font-size:14px;border-radius:50px;border:none;cursor:pointer;transition:all .3s var(--e);letter-spacing:.15px;white-space:nowrap}
+.ba{padding:11px 26px;background:var(--ac);color:#050507}
+.ba:hover{background:var(--acb);transform:translateY(-1px);box-shadow:0 8px 30px rgba(0,232,123,.2)}
+.bo{padding:11px 26px;background:transparent;color:var(--t1);border:1px solid var(--bdh)}
+.bo:hover{border-color:var(--ac);color:var(--ac);background:var(--acs)}
+.btn svg{width:16px;height:16px;flex-shrink:0}
+
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;padding-top:80px}
+#hc{position:absolute;inset:0;z-index:0}
+.hg{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 70% 55% at 50% 35%,rgba(0,232,123,.05) 0%,transparent 70%),radial-gradient(ellipse 50% 40% at 80% 60%,rgba(0,180,216,.03) 0%,transparent 60%)}
+.hc{position:relative;z-index:2;max-width:720px}
+.hb{display:inline-flex;align-items:center;gap:8px;padding:5px 16px 5px 8px;background:var(--acs);border:1px solid rgba(0,232,123,.15);border-radius:50px;font-size:13px;font-weight:500;color:var(--ac);margin-bottom:28px;animation:fu .7s var(--e) .1s both}
+.dot{width:7px;height:7px;background:var(--ac);border-radius:50%;animation:pu 2.5s ease-in-out infinite}
+@keyframes pu{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.hero h1{font-family:var(--fh);font-size:clamp(44px,6.5vw,76px);font-weight:800;line-height:1.04;letter-spacing:-3px;margin-bottom:24px;animation:fu .7s var(--e) .25s both}
+.gr{background:linear-gradient(135deg,var(--ac) 0%,var(--cy) 60%,var(--ac) 100%);background-size:200% 200%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:gs 8s ease-in-out infinite}
+@keyframes gs{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero .ld{font-size:clamp(16px,1.8vw,19px);line-height:1.7;color:var(--t2);max-width:520px;margin-bottom:40px;animation:fu .7s var(--e) .4s both}
+.hbs{display:flex;align-items:center;gap:14px;flex-wrap:wrap;animation:fu .7s var(--e) .55s both}
+.hm{display:flex;gap:48px;margin-top:72px;padding-top:36px;border-top:1px solid var(--bd);animation:fu .7s var(--e) .7s both}
+.hm .v{font-family:var(--fh);font-size:32px;font-weight:700;letter-spacing:-.5px}
+.hm .v .a{color:var(--ac)}
+.hm .l{font-size:13px;color:var(--t3);margin-top:4px}
+@keyframes fu{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+section{padding:clamp(80px,12vw,160px) 0}
+.sl{font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--ac);margin-bottom:16px}
+.st{font-family:var(--fh);font-size:clamp(32px,4.5vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:16px}
+.sd{font-size:17px;line-height:1.7;color:var(--t2);max-width:520px}
+.rv{opacity:0;transform:translateY(36px);transition:all .85s var(--e)}
+.rv.vi{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+
+.prb{background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;margin-top:56px}
+.ac2{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;padding:36px;position:relative;overflow:hidden}
+.ac2::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,71,87,.04) 0%,transparent 60%);animation:rg 20s linear infinite}
+@keyframes rg{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.as{display:flex;align-items:center;gap:14px;padding:14px 0;position:relative;z-index:1}
+.as+.as{border-top:1px solid var(--bd)}
+.ai{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.ai.w{background:rgba(255,168,0,.08);border:1px solid rgba(255,168,0,.15)}
+.ai.b{background:var(--dng);border:1px solid rgba(255,71,87,.15)}
+.as .n{font-size:14px;font-weight:500}
+.as .d{font-size:12px;color:var(--t3);margin-top:2px}
+.ln{font-family:var(--fh);font-size:28px;font-weight:700;color:var(--dn);text-align:center;padding:20px 0 4px;position:relative;z-index:1}
+.lc{font-size:12px;color:var(--t3);text-align:center;position:relative;z-index:1}
+.bs{font-family:var(--fh);font-size:clamp(48px,7vw,72px);font-weight:800;color:var(--dn);letter-spacing:-2px;line-height:1;margin:24px 0 16px}
+.bt{font-size:17px;color:var(--t2);line-height:1.7;max-width:380px}
+
+.stp{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+.sc{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;padding:36px 28px;transition:all .4s var(--e)}
+.sc:hover{border-color:var(--bdh);background:var(--bg4);transform:translateY(-3px)}
+.sn{font-family:var(--fh);font-size:56px;font-weight:800;color:rgba(255,255,255,.03);line-height:1;margin-bottom:20px}
+.sc:hover .sn{color:var(--acg)}
+.sc h3{font-family:var(--fh);font-size:19px;font-weight:600;margin-bottom:10px;letter-spacing:-.2px}
+.sc p{font-size:14px;line-height:1.7;color:var(--t2)}
+.tg{display:inline-block;margin-top:18px;padding:5px 13px;background:var(--acs);color:var(--ac);font-size:11px;font-weight:600;border-radius:50px;letter-spacing:.5px}
+
+.eco{background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.eg{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:56px}
+.ec{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;padding:40px 36px;position:relative;overflow:hidden;transition:all .4s var(--e)}
+.ec:hover{border-color:var(--bdh);transform:translateY(-2px)}
+.ec.li{border-color:var(--bda)}
+.ec.li::after{content:'LIVE';position:absolute;top:20px;right:20px;font-family:var(--fh);font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--ac);padding:4px 12px;background:var(--acg);border:1px solid rgba(0,232,123,.2);border-radius:50px}
+.ei{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:24px}
+.ei.sh{background:var(--acg);border:1px solid rgba(0,232,123,.12)}
+.ei.sw{background:var(--cyg);border:1px solid rgba(0,180,216,.12)}
+.ei.wa{background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.12)}
+.ei.in{background:rgba(255,168,0,.08);border:1px solid rgba(255,168,0,.12)}
+.ec h3{font-family:var(--fh);font-size:22px;font-weight:600;margin-bottom:8px;letter-spacing:-.3px}
+.ec .es{font-size:14px;color:#00c468;font-weight:500;margin-bottom:14px}
+.ec p{font-size:14px;line-height:1.7;color:var(--t2)}
+.ef{margin-top:20px;padding-top:20px;border-top:1px solid var(--bd);display:flex;flex-wrap:wrap;gap:8px}
+.eft{font-size:11px;font-weight:500;padding:5px 12px;background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:50px;color:var(--t2)}
+
+.rt{margin-top:64px;position:relative;padding-left:36px}
+.rt::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--ac),var(--bd) 40%,var(--bd))}
+.rp{position:relative;padding-bottom:48px}
+.rp:last-child{padding-bottom:0}
+.rd{position:absolute;left:-36px;top:4px;width:15px;height:15px;border-radius:50%;border:2px solid var(--bd);background:var(--bg)}
+.rp.act .rd{border-color:var(--ac);background:var(--ac);box-shadow:0 0 12px rgba(0,232,123,.2)}
+.rp.act .rd::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(0,232,123,.2);animation:pu 2.5s ease-in-out infinite}
+.rh{display:flex;align-items:baseline;gap:16px;margin-bottom:8px}
+.rq{font-family:var(--fh);font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--ac)}
+.rtt{font-family:var(--fh);font-size:20px;font-weight:600;letter-spacing:-.2px}
+.ri{margin-top:12px}
+.rit{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:14px;color:var(--t2)}
+.rit .ck{color:var(--ac);font-size:13px;flex-shrink:0}
+.rit .pe{color:var(--t4);font-size:13px;flex-shrink:0}
+
+.cmp{background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:56px}
+.cc{border-radius:16px;padding:40px 36px}
+.cc.bd{background:var(--bg3);border:1px solid rgba(255,71,87,.1)}
+.cc.gd{background:var(--bg3);border:1px solid rgba(0,232,123,.15)}
+.cl{font-family:var(--fh);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
+.cc.bd .cl{color:var(--dn)}.cc.gd .cl{color:var(--ac)}
+.cr{display:flex;align-items:flex-start;gap:12px;padding:12px 0}
+.cr+.cr{border-top:1px solid var(--bd)}
+.ci{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;font-size:11px}
+.cc.bd .ci{background:var(--dng);color:var(--dn)}.cc.gd .ci{background:var(--acg);color:var(--ac)}
+.ct{font-size:14px;line-height:1.6;color:var(--t2)}
+.ct strong{color:var(--t1);font-weight:500}
+
+.sb{background:var(--bg3);border:1px solid var(--bd);border-radius:20px;padding:clamp(40px,6vw,72px);margin-top:56px;text-align:center;position:relative;overflow:hidden}
+.sb::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% -20%,var(--acs) 0%,transparent 60%)}
+.rb{display:flex;align-items:center;justify-content:center;gap:12px;margin:28px auto;max-width:460px;background:var(--bg2);border:1px solid var(--bdh);border-radius:12px;padding:14px 20px;position:relative;z-index:1}
+.rb code{font-family:var(--fm);font-size:15px;color:var(--ac)}
+.cpb{padding:7px 16px;background:var(--bg5);border:1px solid var(--bd);border-radius:8px;color:var(--t2);font-size:12px;cursor:pointer;transition:all .25s;font-family:var(--fb);font-weight:500}
+.cpb:hover{background:var(--ac);color:var(--bg2);border-color:var(--ac)}
+.ssr{display:flex;justify-content:center;gap:56px;margin-top:32px;position:relative;z-index:1}
+.ss{text-align:center}
+.ssn{width:32px;height:32px;border-radius:50%;background:var(--acg);border:1px solid rgba(0,232,123,.2);color:var(--ac);font-family:var(--fh);font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.sst{font-size:13px;color:var(--t2)}
+
+.tg2{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:56px}
+.tc{background:var(--bg3);border:1px solid var(--bd);border-radius:14px;padding:28px 24px;text-align:center;transition:all .3s var(--e)}
+.tc:hover{border-color:var(--bdh)}
+.ti{font-size:28px;margin-bottom:14px}
+.tc h4{font-family:var(--fh);font-size:15px;font-weight:600;margin-bottom:6px}
+.tc p{font-size:12px;color:var(--t3);line-height:1.5}
+
+.ref{background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.rfg{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:56px}
+.rfc{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;padding:36px;transition:all .4s var(--e)}
+.rfc:hover{border-color:var(--bdh);transform:translateY(-2px)}
+.rfi{width:44px;height:44px;border-radius:12px;background:var(--acg);border:1px solid rgba(0,232,123,.1);display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:20px}
+.rfc h3{font-family:var(--fh);font-size:20px;font-weight:600;margin-bottom:10px;letter-spacing:-.2px}
+.rfc p{font-size:14px;line-height:1.7;color:var(--t2)}
+.rbg{font-family:var(--fh);font-size:32px;font-weight:700;color:var(--ac);margin:14px 0 6px}
+
+.cta{text-align:center;padding:clamp(100px,14vw,180px) 0;position:relative}
+.cta::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 50% at 50% 70%,var(--acs) 0%,transparent 60%)}
+.cta .st{margin:0 auto 16px}.cta .sd{margin:0 auto 36px;text-align:center}
+.ctb{display:flex;justify-content:center;gap:14px;position:relative;z-index:1}
+
+footer{border-top:1px solid var(--bd);padding:44px 0}
+.ft{display:flex;justify-content:space-between;align-items:center}
+.fl{display:flex;align-items:center;gap:28px}
+.fcp{font-size:13px;color:var(--t3)}
+.fli{display:flex;gap:20px;list-style:none}
+.fli a{font-size:13px;color:var(--t3);transition:color .2s}
+.fli a:hover{color:var(--t2)}
+
+@media(max-width:900px){.nl{display:none}.pg,.cg,.rfg,.eg{grid-template-columns:1fr}.stp{grid-template-columns:1fr;gap:14px}.tg2{grid-template-columns:1fr 1fr}.hm{flex-direction:column;gap:20px}.ssr{flex-direction:column;gap:20px}.ft{flex-direction:column;gap:20px;text-align:center}.fl{flex-direction:column}}
+@media(max-width:500px){.tg2{grid-template-columns:1fr}}
+.grn{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-repeat:repeat;background-size:256px}
+</style>
 </head>
-<body class="bg-dark text-white font-sans antialiased overflow-x-hidden">
+<body>
+<div class="grn"></div>
+<nav id="nv"><div class="c">
+<a href="#" class="logo"><div class="lm"><svg viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Reclaim</a>
+<ul class="nl"><li><a href="#problem">Problem</a></li><li><a href="#how">How it works</a></li><li><a href="#ecosystem">Ecosystem</a></li><li><a href="#roadmap">Roadmap</a></li><li><a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank">GitHub</a></li></ul>
+<button class="btn ba" onclick="addMM()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Get protected</button>
+</div></nav>
 
-  <!-- Loader -->
-  <div id="loader" class="fixed inset-0 z-[100] bg-dark flex items-center justify-center transition-opacity duration-500">
-    <div class="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin"></div>
-  </div>
+<section class="hero"><canvas id="hc"></canvas><div class="hg"></div><div class="c"><div class="hc">
+<div class="hb"><span class="dot"></span> Live on Ethereum mainnet</div>
+<h1>The protocol that<br><span class="gr">reclaims your MEV</span></h1>
+<p class="ld">Every Ethereum transaction loses value to invisible bots. Reclaim is a full-stack protection protocol: shield your trades, earn rebates, and access a growing suite of MEV-aware products.</p>
+<div class="hbs"><button class="btn ba" onclick="addMM()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Protect my wallet</button><a href="#ecosystem" class="btn bo">Explore the protocol</a></div>
+<div class="hm"><div><div class="v"><span class="a">80</span>%</div><div class="l">MEV rebated to users</div></div><div><div class="v"><span class="a">$0</span></div><div class="l">Fees to use Reclaim</div></div><div><div class="v"><span class="a">4</span> products</div><div class="l">In the ecosystem</div></div></div>
+</div></div></section>
 
-  <noscript>
-    <div style="text-align:center;padding:4rem;color:#fff;background:#0a0b0f;min-height:100vh;">
-      <h1 style="font-size:2rem;margin-bottom:1rem;">Reclaim</h1>
-      <p>Please enable JavaScript to use this site.</p>
-    </div>
-  </noscript>
+<section class="prb" id="problem"><div class="c">
+<div class="rv"><div class="sl">The problem</div><div class="st">Every swap costs you<br>more than you think</div><div class="sd">MEV bots monitor every pending transaction on Ethereum. When you trade, they manipulate execution price — and you never see it happen.</div></div>
+<div class="pg">
+<div class="ac2 rv d1">
+<div class="as"><div class="ai w">&#128269;</div><div><div class="n">Bot detects your swap</div><div class="d">Your pending transaction is visible in the mempool</div></div></div>
+<div class="as"><div class="ai b">&#9889;</div><div><div class="n">Front-run: buys before you</div><div class="d">Pushes the price up before your trade executes</div></div></div>
+<div class="as"><div class="ai b">&#9889;</div><div><div class="n">Back-run: sells after you</div><div class="d">Captures the price difference as profit</div></div></div>
+<div class="as"><div class="ai b">&#10060;</div><div><div class="n">You get a worse price</div><div class="d">The bot pockets the difference you lost</div></div></div>
+<div class="ln">-$12.40</div><div class="lc">Average loss per sandwich attack</div>
+</div>
+<div class="rv d2"><div class="bs">$1.4B+</div><div class="bt">extracted from Ethereum users by MEV bots in the past 12 months. Every wallet. Every swap. An invisible tax on every transaction — until now.</div></div>
+</div></div></section>
 
-  <!-- ===== NAVIGATION ===== -->
-  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-2 text-xl font-bold">
-        <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none">
-          <circle cx="16" cy="16" r="14" stroke="#00ff88" stroke-width="2" fill="none"/>
-          <path d="M16 6 L22 14 L16 26 L10 14 Z" fill="#00ff88" opacity="0.3"/>
-          <path d="M16 8 L20 14 L16 24 L12 14 Z" stroke="#00ff88" stroke-width="1.5" fill="none"/>
-        </svg>
-        <span>Reclaim</span>
-      </a>
-      <div class="hidden md:flex items-center gap-8">
-        <a href="#how-it-works" class="text-sm text-gray-400 hover:text-white transition-colors">How It Works</a>
-        <a href="#comparison" class="text-sm text-gray-400 hover:text-white transition-colors">Compare</a>
-        <a href="#live-stats" class="text-sm text-gray-400 hover:text-white transition-colors">Stats</a>
-        <a href="#setup" class="text-sm text-gray-400 hover:text-white transition-colors">Setup</a>
-        <a href="/docs.html" class="text-sm text-gray-400 hover:text-white transition-colors">Docs</a>
-        <button id="nav-connect-wallet" class="btn-secondary text-sm px-4 py-2">Connect Wallet</button>
-      </div>
-      <button id="mobile-menu-btn" class="md:hidden text-gray-400 hover:text-white transition-colors">
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-      </button>
-    </div>
-    <!-- Mobile menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-dark/95 backdrop-blur-xl border-t border-gray-800/50">
-      <div class="flex flex-col items-center gap-4 p-6">
-        <a href="#how-it-works" class="text-gray-300 hover:text-white transition-colors mobile-nav-link">How It Works</a>
-        <a href="#comparison" class="text-gray-300 hover:text-white transition-colors mobile-nav-link">Compare</a>
-        <a href="#live-stats" class="text-gray-300 hover:text-white transition-colors mobile-nav-link">Stats</a>
-        <a href="#setup" class="text-gray-300 hover:text-white transition-colors mobile-nav-link">Setup</a>
-        <a href="/docs.html" class="text-gray-300 hover:text-white transition-colors mobile-nav-link">Docs</a>
-        <button id="mobile-connect-wallet" class="btn-primary px-6 py-2.5 text-sm mt-2">Connect Wallet</button>
-      </div>
-    </div>
-  </nav>
+<section id="how"><div class="c">
+<div class="rv"><div class="sl">How it works</div><div class="st">Three layers of<br>transaction defense</div><div class="sd">Reclaim routes your transactions through private infrastructure, extracts value that bots would steal, and returns it to you.</div></div>
+<div class="stp">
+<div class="sc rv d1"><div class="sn">01</div><h3>Private routing</h3><p>Your swap is sent through Reclaim's private channel — invisible to mempool scanners. No bot can see or front-run it.</p><span class="tg">Sandwich protection</span></div>
+<div class="sc rv d2"><div class="sn">02</div><h3>Value capture</h3><p>Our engine identifies legitimate backrun opportunities and captures value that would otherwise go to MEV bots.</p><span class="tg">MEV extraction</span></div>
+<div class="sc rv d3"><div class="sn">03</div><h3>Automatic rebates</h3><p>80% of captured MEV is returned to your wallet through our on-chain rebate contract. Transparent and automatic.</p><span class="tg">80% to you</span></div>
+</div></div></section>
 
-  <!-- ===== HERO ===== -->
-  <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
-    <canvas id="shield-canvas" class="absolute inset-0 w-full h-full"></canvas>
-    <div class="absolute inset-0 bg-gradient-to-b from-dark/20 via-transparent to-dark pointer-events-none"></div>
+<section class="eco" id="ecosystem"><div class="c">
+<div class="rv"><div class="sl">Ecosystem</div><div class="st">A full-stack protocol,<br>not just an RPC</div><div class="sd">Reclaim is building a complete suite of MEV-aware products. Each layer captures more value and returns more to users.</div></div>
+<div class="eg">
+<div class="ec li rv d1"><div class="ei sh">&#128737;</div><h3>Reclaim RPC</h3><div class="es">Protected transaction routing</div><p>Add our RPC to MetaMask in one click. Every transaction is routed privately, shielded from sandwich bots, and eligible for MEV rebates.</p><div class="ef"><span class="eft">One-click MetaMask</span><span class="eft">Sandwich protection</span><span class="eft">80% rebates</span><span class="eft">No fees</span></div></div>
+<div class="ec rv d2"><div class="ei sw">&#128260;</div><h3>Reclaim Swap</h3><div class="es">MEV-aware DEX aggregator</div><p>Trade through our interface for best execution across all DEXs. We route optimally while capturing and sharing MEV that other aggregators keep.</p><div class="ef"><span class="eft">Best execution</span><span class="eft">Multi-DEX routing</span><span class="eft">Intent-based</span><span class="eft">MEV cashback</span></div></div>
+<div class="ec rv d3"><div class="ei wa">&#128274;</div><h3>Reclaim Wallet</h3><div class="es">Browser extension with built-in protection</div><p>A Chrome extension where every transaction flows through Reclaim. Built-in MEV protection for your entire Ethereum experience.</p><div class="ef"><span class="eft">Chrome extension</span><span class="eft">Full tx protection</span><span class="eft">Auto-rebates</span><span class="eft">Referral rewards</span></div></div>
+<div class="ec rv d4"><div class="ei in">&#9881;</div><h3>Reclaim Infrastructure</h3><div class="es">Full vertical MEV stack</div><p>Our own builder, relay, and validator infrastructure. Capturing value at every layer — from user intent to block inclusion.</p><div class="ef"><span class="eft">Own block builder</span><span class="eft">Private mempool</span><span class="eft">Validator network</span><span class="eft">Max capture</span></div></div>
+</div></div></section>
 
-    <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 mb-8 hero-anim">
-        <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-        <span class="text-sm text-accent font-medium">Live on Ethereum Mainnet</span>
-      </div>
+<section id="roadmap"><div class="c">
+<div class="rv"><div class="sl">Roadmap</div><div class="st">Building in public</div><div class="sd">A clear path from transaction protection to full-stack MEV infrastructure. Every milestone ships working product.</div></div>
+<div class="rt rv d1">
+<div class="rp act"><div class="rd"></div><div class="rh"><span class="rq">Now</span><span class="rtt">Reclaim RPC</span></div><div class="ri"><div class="rit"><span class="ck">&#10003;</span> MEV-protected RPC endpoint live</div><div class="rit"><span class="ck">&#10003;</span> On-chain rebate smart contract deployed</div><div class="rit"><span class="ck">&#10003;</span> One-click MetaMask integration</div><div class="rit"><span class="ck">&#10003;</span> Referral system with on-chain tracking</div><div class="rit"><span class="ck">&#10003;</span> Open source codebase on GitHub</div></div></div>
+<div class="rp"><div class="rd"></div><div class="rh"><span class="rq">Q2 2026</span><span class="rtt">Reclaim Swap</span></div><div class="ri"><div class="rit"><span class="pe">&#9675;</span> DEX aggregator frontend with best execution</div><div class="rit"><span class="pe">&#9675;</span> Intent-based trading for pre-swap MEV capture</div><div class="rit"><span class="pe">&#9675;</span> Multi-router optimization (Uniswap, Curve, Balancer)</div><div class="rit"><span class="pe">&#9675;</span> Gasless swap support via EIP-2612 permits</div></div></div>
+<div class="rp"><div class="rd"></div><div class="rh"><span class="rq">Q3 2026</span><span class="rtt">Reclaim Wallet</span></div><div class="ri"><div class="rit"><span class="pe">&#9675;</span> Chrome extension wallet with native MEV protection</div><div class="rit"><span class="pe">&#9675;</span> Transaction simulation and risk alerts</div><div class="rit"><span class="pe">&#9675;</span> Integrated dashboard with earnings tracking</div><div class="rit"><span class="pe">&#9675;</span> Multi-chain support (Ethereum + L2s)</div></div></div>
+<div class="rp"><div class="rd"></div><div class="rh"><span class="rq">Q4 2026</span><span class="rtt">Reclaim Infrastructure</span></div><div class="ri"><div class="rit"><span class="pe">&#9675;</span> Own block builder for maximum MEV capture</div><div class="rit"><span class="pe">&#9675;</span> Private relay and mempool infrastructure</div><div class="rit"><span class="pe">&#9675;</span> Validator network participation</div><div class="rit"><span class="pe">&#9675;</span> Full vertical stack — intent to inclusion</div></div></div>
+</div></div></section>
 
-      <h1 class="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.05] mb-6 hero-anim">
-        Stop Losing Money<br>
-        <span class="text-gradient">to MEV.</span>
-      </h1>
+<section class="cmp"><div class="c">
+<div class="rv"><div class="sl">The difference</div><div class="st">Trading without protection<br>vs. trading with Reclaim</div></div>
+<div class="cg">
+<div class="cc bd rv d1"><div class="cl">Without protection</div><div class="cr"><div class="ci">&#10005;</div><div class="ct"><strong>Transactions exposed</strong> in the public mempool — visible to every MEV bot</div></div><div class="cr"><div class="ci">&#10005;</div><div class="ct"><strong>Sandwich attacks</strong> extract $5–50 per swap through front and back-running</div></div><div class="cr"><div class="ci">&#10005;</div><div class="ct"><strong>Zero recourse</strong> — extracted value goes entirely to bot operators</div></div><div class="cr"><div class="ci">&#10005;</div><div class="ct"><strong>Invisible losses</strong> that never appear in your wallet history</div></div></div>
+<div class="cc gd rv d2"><div class="cl">With Reclaim</div><div class="cr"><div class="ci">&#10003;</div><div class="ct"><strong>Private routing</strong> keeps transactions invisible to scanners</div></div><div class="cr"><div class="ci">&#10003;</div><div class="ct"><strong>Sandwich elimination</strong> — bots cannot see your pending swap</div></div><div class="cr"><div class="ci">&#10003;</div><div class="ct"><strong>80% rebates</strong> — captured MEV returned directly to your wallet</div></div><div class="cr"><div class="ci">&#10003;</div><div class="ct"><strong>On-chain verified</strong> — every rebate traceable through public contract</div></div></div>
+</div></div></section>
 
-      <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed hero-anim">
-        Reclaim protects your Ethereum transactions and shares
-        <span class="text-white font-semibold">80% of captured value</span> back to you.
-        Free forever.
-      </p>
+<section id="setup"><div class="c">
+<div class="rv"><div class="sl">Get started</div><div class="st">One click. Fully protected.</div><div class="sd">Add Reclaim to MetaMask in seconds. No account. No sign-up. No fees.</div></div>
+<div class="sb rv d1">
+<div class="rb"><code>rpc.reclaimfi.xyz</code><button class="cpb" onclick="cpR(this)">Copy</button></div>
+<div style="position:relative;z-index:1;margin:20px 0"><button class="btn ba" onclick="addMM()" style="font-size:15px;padding:14px 36px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Add to MetaMask — one click</button></div>
+<div class="ssr"><div class="ss"><div class="ssn">1</div><div class="sst">Click the button</div></div><div class="ss"><div class="ssn">2</div><div class="sst">Approve in MetaMask</div></div><div class="ss"><div class="ssn">3</div><div class="sst">Every trade is protected</div></div></div>
+</div></div></section>
 
-      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16 hero-anim">
-        <button id="hero-add-metamask" class="btn-primary text-lg px-8 py-4">
-          <svg class="w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-          Add to MetaMask
-        </button>
-        <a href="#how-it-works" class="btn-secondary text-lg px-8 py-4">
-          Learn More
-          <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </a>
-      </div>
+<section><div class="c">
+<div class="rv"><div class="sl">Trust &amp; transparency</div><div class="st">Built on verifiable infrastructure</div></div>
+<div class="tg2">
+<div class="tc rv d1"><div class="ti">&#128272;</div><h4>Open source</h4><p>Full codebase on GitHub. Verify every line that handles your transactions.</p></div>
+<div class="tc rv d2"><div class="ti">&#128279;</div><h4>On-chain rebates</h4><p>Every rebate distributed through a public smart contract on Etherscan.</p></div>
+<div class="tc rv d3"><div class="ti">&#128737;</div><h4>Built on Flashbots</h4><p>Leverages Flashbots Protect and MEV-Share — battle-tested infrastructure.</p></div>
+<div class="tc rv d4"><div class="ti">&#128101;</div><h4>Security researchers</h4><p>Built by MEV researchers with deep smart contract security expertise.</p></div>
+</div></div></section>
 
-      <div class="flex flex-wrap justify-center gap-8 md:gap-16 hero-anim">
-        <div class="text-center">
-          <div class="text-2xl md:text-3xl font-bold font-mono text-accent" id="stat-protected">0</div>
-          <div class="text-xs text-gray-500 uppercase tracking-wider mt-1">Txs Protected</div>
-        </div>
-        <div class="text-center">
-          <div class="text-2xl md:text-3xl font-bold font-mono text-accent" id="stat-rebates">$0</div>
-          <div class="text-xs text-gray-500 uppercase tracking-wider mt-1">Rebates Paid</div>
-        </div>
-        <div class="text-center">
-          <div class="text-2xl md:text-3xl font-bold font-mono text-accent" id="stat-users">0</div>
-          <div class="text-xs text-gray-500 uppercase tracking-wider mt-1">Active Users</div>
-        </div>
-      </div>
-    </div>
+<section class="ref" id="referral"><div class="c">
+<div class="rv"><div class="sl">Earn together</div><div class="st">Share Reclaim. Earn ETH.</div><div class="sd">Invite others and earn a percentage of their MEV rebates. Passive, permanent, on-chain income.</div></div>
+<div class="rfg">
+<div class="rfc rv d1"><div class="rfi">&#128279;</div><h3>Share your link</h3><p>Every wallet you refer gets the same protection. When they earn rebates, you earn a cut — automatically through the smart contract.</p><div class="rbg">5%</div><p>of every referred user's rebates, forever</p></div>
+<div class="rfc rv d2"><div class="rfi">&#128200;</div><h3>Track your earnings</h3><p>Connect your wallet to see real-time stats: referred users, accumulated earnings, pending rebates.</p><div style="margin-top:20px"><button class="btn bo" style="padding:8px 20px;font-size:13px" onclick="addMM()">Connect wallet</button></div></div>
+</div></div></section>
 
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
-      <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-      </svg>
-    </div>
-  </section>
+<section class="cta"><div class="c"><div class="rv">
+<div class="st">Stop paying the<br>invisible MEV tax</div>
+<div class="sd" style="text-align:center;margin:0 auto 36px">No account. No fees. No trust required. One click and every transaction is protected.</div>
+<div class="ctb"><button class="btn ba" onclick="addMM()" style="font-size:15px;padding:14px 36px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Protect my wallet</button><a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank" class="btn bo">View on GitHub</a></div>
+</div></div></section>
 
-  <!-- ===== HOW IT WORKS ===== -->
-  <section id="how-it-works" class="relative py-24 md:py-32">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="text-center mb-20">
-        <h2 class="text-3xl md:text-5xl font-bold mb-4 section-reveal">How It Works</h2>
-        <p class="text-gray-400 text-lg max-w-xl mx-auto section-reveal">Three steps. Thirty seconds. Zero cost.</p>
-      </div>
+<footer><div class="c"><div class="ft">
+<div class="fl">
+<a href="#" class="logo" style="font-size:18px"><div class="lm" style="width:28px;height:28px;border-radius:7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#050507" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>Reclaim</a>
+<span class="fcp">&copy; 2026 Reclaim Protocol</span>
+</div>
+<ul class="fli"><li><a href="https://github.com/reclaim-rpc/reclaim-fi" target="_blank">GitHub</a></li><li><a href="mailto:contact@reclaimfi.xyz">Contact</a></li><li><a href="#">Docs</a></li></ul>
+</div></div></footer>
 
-      <div class="grid md:grid-cols-3 gap-8 relative">
-        <div class="hidden md:block absolute top-24 left-[16.67%] right-[16.67%] h-px overflow-hidden">
-          <div id="connecting-line" class="h-full bg-gradient-to-r from-accent/0 via-accent/40 to-accent/0 origin-left"></div>
-        </div>
+<script>
+const nv=document.getElementById('nv');
+window.addEventListener('scroll',()=>{nv.classList.toggle('s',pageYOffset>50)},{passive:true});
+const ob=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vi')})},{threshold:.12,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.rv').forEach(el=>ob.observe(el));
 
-        <div class="step-card glass-card p-8 rounded-2xl text-center relative">
-          <div class="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
-            </svg>
-          </div>
-          <div class="text-accent font-mono text-sm mb-2">Step 01</div>
-          <h3 class="text-xl font-bold mb-3">Add Our RPC</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">One click to add Reclaim to MetaMask. Same Ethereum, same dApps, zero changes to your workflow.</p>
-        </div>
+const cv=document.getElementById('hc'),cx=cv.getContext('2d');
+let W,H,ps=[],mx=0,my=0;const NP=matchMedia('(max-width:768px)').matches?50:120;
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();addEventListener('resize',rs);
+class Pt{constructor(){this.i()}i(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-.5)*.35;this.vy=(Math.random()-.5)*.35;this.s=Math.random()*1.4+.4;this.a=Math.random()*.35+.08;this.c=Math.random()>.75?'0,232,123':'0,180,216'}u(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W)this.vx*=-1;if(this.y<0||this.y>H)this.vy*=-1;const dx=this.x-mx,dy=this.y-my,d=Math.sqrt(dx*dx+dy*dy);if(d<140){const f=(140-d)/140*.015;this.vx+=dx/d*f;this.vy+=dy/d*f}}dr(){cx.beginPath();cx.arc(this.x,this.y,this.s,0,Math.PI*2);cx.fillStyle=`rgba(${this.c},${this.a})`;cx.fill()}}
+for(let i=0;i<NP;i++)ps.push(new Pt);
+function fr(){cx.clearRect(0,0,W,H);for(let i=0;i<ps.length;i++){ps[i].u();ps[i].dr();for(let j=i+1;j<ps.length;j++){const dx=ps[i].x-ps[j].x,dy=ps[i].y-ps[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<110){cx.beginPath();cx.moveTo(ps[i].x,ps[i].y);cx.lineTo(ps[j].x,ps[j].y);cx.strokeStyle=`rgba(0,232,123,${.05*(1-d/110)})`;cx.lineWidth=.4;cx.stroke()}}}requestAnimationFrame(fr)}fr();
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
 
-        <div class="step-card glass-card p-8 rounded-2xl text-center relative">
-          <div class="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
-            </svg>
-          </div>
-          <div class="text-accent font-mono text-sm mb-2">Step 02</div>
-          <h3 class="text-xl font-bold mb-3">Trade Normally</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Uniswap, 1inch, Curve — whatever you use. We protect every swap behind the scenes.</p>
-        </div>
-
-        <div class="step-card glass-card p-8 rounded-2xl text-center relative">
-          <div class="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
-            </svg>
-          </div>
-          <div class="text-accent font-mono text-sm mb-2">Step 03</div>
-          <h3 class="text-xl font-bold mb-3">Get Paid</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">We capture backrun value and return 80% to your wallet. Earn from trades that used to cost you.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== THE MEV TAX ===== -->
-  <section id="comparison" class="relative py-24 md:py-32 overflow-hidden">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="text-center mb-20">
-        <h2 class="text-3xl md:text-5xl font-bold mb-4 section-reveal">The MEV Tax</h2>
-        <p class="text-gray-400 text-lg max-w-xl mx-auto section-reveal">Every swap on Ethereum leaks value to MEV bots. Here's what changes with Reclaim.</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-6">
-        <!-- Without Protection -->
-        <div class="comparison-card glass-card rounded-2xl p-8 relative overflow-hidden" style="border-color: rgba(239,68,68,0.15)">
-          <div class="absolute top-0 left-0 right-0 h-1 bg-danger"></div>
-          <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center">
-              <svg class="w-5 h-5 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold">Normal RPC</h3>
-            <span class="text-xs text-gray-500 ml-auto">Infura, Alchemy, etc.</span>
-          </div>
-
-          <div class="space-y-3 mb-8">
-            <div class="flex items-center gap-3 p-3 rounded-xl bg-dark/60">
-              <div class="w-7 h-7 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0 text-xs font-mono">TX</div>
-              <div class="h-px flex-1 border-t border-dashed border-gray-700"></div>
-              <div class="px-2.5 py-1 rounded-lg bg-gray-800 text-xs text-gray-400">Public Mempool</div>
-            </div>
-            <div class="flex items-center gap-3 p-3 rounded-xl bg-danger/5 border border-danger/10">
-              <div class="h-px flex-1 border-t border-dashed border-danger/30"></div>
-              <div class="px-2.5 py-1 rounded-lg bg-danger/10 text-xs text-danger font-medium whitespace-nowrap">Sandwich Attack</div>
-              <div class="h-px flex-1 border-t border-dashed border-danger/30"></div>
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <div class="flex justify-between text-sm"><span class="text-gray-400">Sandwich Loss</span><span class="text-danger font-mono font-bold">-$15 avg</span></div>
-            <div class="flex justify-between text-sm"><span class="text-gray-400">MEV Rebate</span><span class="text-gray-600 font-mono">$0</span></div>
-            <div class="h-px bg-gray-800 my-1"></div>
-            <div class="flex justify-between items-center"><span class="text-gray-300 font-medium">Net Impact</span><span class="text-danger font-mono font-bold text-xl">-$15</span></div>
-          </div>
-        </div>
-
-        <!-- With Reclaim -->
-        <div class="comparison-card glass-card rounded-2xl p-8 relative overflow-hidden" style="border-color: rgba(0,255,136,0.15)">
-          <div class="absolute top-0 left-0 right-0 h-1 bg-accent"></div>
-          <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-              <svg class="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold">Reclaim RPC</h3>
-            <span class="text-xs text-accent/60 ml-auto">reclaimfi.xyz</span>
-          </div>
-
-          <div class="space-y-3 mb-8">
-            <div class="flex items-center gap-3 p-3 rounded-xl bg-dark/60">
-              <div class="w-7 h-7 rounded-lg bg-gray-800 flex items-center justify-center flex-shrink-0 text-xs font-mono">TX</div>
-              <div class="h-px flex-1 border-t border-dashed border-accent/20"></div>
-              <div class="px-2.5 py-1 rounded-lg bg-accent/10 border border-accent/20 text-xs text-accent">Reclaim</div>
-            </div>
-            <div class="flex items-center gap-3 p-3 rounded-xl bg-accent/5 border border-accent/10">
-              <div class="h-px flex-1 border-t border-dashed border-accent/20"></div>
-              <div class="px-2.5 py-1 rounded-lg bg-accent/10 text-xs text-accent font-medium whitespace-nowrap">Private Route + Backrun</div>
-              <div class="h-px flex-1 border-t border-dashed border-accent/20"></div>
-            </div>
-          </div>
-
-          <div class="space-y-3">
-            <div class="flex justify-between text-sm"><span class="text-gray-400">Sandwich Loss</span><span class="text-accent font-mono font-bold">$0</span></div>
-            <div class="flex justify-between text-sm"><span class="text-gray-400">MEV Rebate</span><span class="text-accent font-mono font-bold">+$4 avg</span></div>
-            <div class="h-px bg-gray-800 my-1"></div>
-            <div class="flex justify-between items-center"><span class="text-gray-300 font-medium">Net Impact</span><span class="text-accent font-mono font-bold text-xl">+$4</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-8 text-center section-reveal">
-        <div class="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-accent/5 border border-accent/10">
-          <span class="text-gray-400">Net difference per swap:</span>
-          <span class="text-accent font-bold font-mono text-xl">+$19</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== LIVE STATS ===== -->
-  <section id="live-stats" class="relative py-24 md:py-32">
-    <div class="absolute inset-0 pointer-events-none">
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-accent/[0.03] blur-[100px]"></div>
-    </div>
-    <div class="relative max-w-6xl mx-auto px-6">
-      <div class="text-center mb-20">
-        <h2 class="text-3xl md:text-5xl font-bold mb-4 section-reveal">Live Stats</h2>
-        <p class="text-gray-400 text-lg max-w-xl mx-auto section-reveal">Real numbers. Verifiable on-chain.</p>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        <div class="glass-card rounded-2xl p-6 text-center stat-card">
-          <div class="text-3xl md:text-4xl font-bold font-mono text-accent mb-2" id="ls-protected">0</div>
-          <div class="text-xs md:text-sm text-gray-400">Transactions<br>Protected</div>
-        </div>
-        <div class="glass-card rounded-2xl p-6 text-center stat-card">
-          <div class="text-3xl md:text-4xl font-bold font-mono text-accent mb-2" id="ls-swaps">0</div>
-          <div class="text-xs md:text-sm text-gray-400">Swaps<br>Detected</div>
-        </div>
-        <div class="glass-card rounded-2xl p-6 text-center stat-card">
-          <div class="text-3xl md:text-4xl font-bold font-mono text-white mb-2" id="ls-mev">0 ETH</div>
-          <div class="text-xs md:text-sm text-gray-400">MEV<br>Captured</div>
-        </div>
-        <div class="glass-card rounded-2xl p-6 text-center stat-card">
-          <div class="text-3xl md:text-4xl font-bold font-mono text-accent mb-2" id="ls-rebates">0 ETH</div>
-          <div class="text-xs md:text-sm text-gray-400">Rebates<br>Paid</div>
-        </div>
-      </div>
-
-      <div class="mt-8 text-center">
-        <p class="text-gray-500 text-sm inline-flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-          Updating live from <code class="text-gray-400 ml-1">rpc.reclaimfi.xyz/stats</code>
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== REFERRAL ===== -->
-  <section id="referral" class="relative py-24 md:py-32 overflow-hidden">
-    <div class="absolute inset-0 pointer-events-none">
-      <div class="absolute top-1/3 right-0 w-[500px] h-[500px] rounded-full bg-accent/[0.03] blur-[120px]"></div>
-    </div>
-
-    <div class="relative max-w-4xl mx-auto px-6 text-center">
-      <h2 class="text-3xl md:text-5xl font-bold mb-4 section-reveal">Earn More — Refer Friends</h2>
-      <p class="text-gray-400 text-lg max-w-xl mx-auto mb-12 section-reveal">Share your link. Earn passive income from every swap your referrals make.</p>
-
-      <div class="grid md:grid-cols-2 gap-6 mb-12">
-        <div class="glass-card rounded-2xl p-8 text-left referral-card">
-          <div class="text-accent font-mono text-4xl font-bold mb-3">85%</div>
-          <h3 class="font-bold text-lg mb-2">For Your Referrals</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Referred users get 85% rebate — 5% more than standard. Real incentive to use your link.</p>
-        </div>
-        <div class="glass-card rounded-2xl p-8 text-left referral-card">
-          <div class="text-accent font-mono text-4xl font-bold mb-3">5%</div>
-          <h3 class="font-bold text-lg mb-2">For You</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Earn 5% of your referrals' MEV value — passive income forever. No cap, no expiry.</p>
-        </div>
-      </div>
-
-      <div id="referral-cta">
-        <button id="referral-connect" class="btn-primary text-lg px-8 py-4">
-          Connect Wallet to Get Your Referral Link
-        </button>
-      </div>
-
-      <div id="referral-link-container" class="hidden mt-8 glass-card rounded-2xl p-6 max-w-xl mx-auto text-left">
-        <p class="text-sm text-gray-400 mb-3">Your Referral Link</p>
-        <div class="flex items-center gap-2">
-          <code id="referral-link" class="flex-1 bg-dark rounded-lg px-4 py-3 text-accent font-mono text-sm truncate border border-gray-800"></code>
-          <button id="copy-referral" class="btn-secondary px-4 py-3 text-sm flex-shrink-0">Copy</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SETUP GUIDE ===== -->
-  <section id="setup" class="relative py-24 md:py-32">
-    <div class="max-w-4xl mx-auto px-6">
-      <div class="text-center mb-20">
-        <h2 class="text-3xl md:text-5xl font-bold mb-4 section-reveal">Setup Guide</h2>
-        <p class="text-gray-400 text-lg section-reveal">Add Reclaim to any Ethereum wallet in seconds.</p>
-      </div>
-
-      <div class="glass-card rounded-2xl p-8 md:p-12">
-        <div class="flex items-center gap-3 mb-8">
-          <div class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
-            <svg class="w-6 h-6 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21.3 6.5l-9-4.3c-.2-.1-.4-.1-.6 0l-9 4.3c-.3.1-.5.4-.5.7v9.6c0 .3.2.6.5.7l9 4.3c.1 0 .2.1.3.1s.2 0 .3-.1l9-4.3c.3-.1.5-.4.5-.7V7.2c0-.3-.2-.6-.5-.7z"/>
-            </svg>
-          </div>
-          <h3 class="text-xl font-bold">MetaMask</h3>
-        </div>
-
-        <div class="space-y-6 mb-8">
-          <div class="flex gap-4 setup-step">
-            <div class="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span class="text-accent font-mono text-sm font-bold">1</span>
-            </div>
-            <p class="font-medium text-gray-200">Open MetaMask &rarr; Settings &rarr; Networks &rarr; Add Network</p>
-          </div>
-
-          <div class="flex gap-4 setup-step">
-            <div class="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span class="text-accent font-mono text-sm font-bold">2</span>
-            </div>
-            <div class="flex-1">
-              <p class="font-medium text-gray-200 mb-3">Enter these details:</p>
-              <div class="bg-dark rounded-xl p-4 space-y-3 font-mono text-sm border border-gray-800/50">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-                  <span class="text-gray-500">Network Name</span>
-                  <span class="text-white">Ethereum (MEV Protected)</span>
-                </div>
-                <div class="h-px bg-gray-800/50"></div>
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-                  <span class="text-gray-500">RPC URL</span>
-                  <div class="flex items-center gap-2">
-                    <span class="text-accent">https://rpc.reclaimfi.xyz</span>
-                    <button class="copy-btn text-gray-600 hover:text-accent transition-colors" data-copy="https://rpc.reclaimfi.xyz" title="Copy">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                    </button>
-                  </div>
-                </div>
-                <div class="h-px bg-gray-800/50"></div>
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-                  <span class="text-gray-500">Chain ID</span>
-                  <span class="text-white">1</span>
-                </div>
-                <div class="h-px bg-gray-800/50"></div>
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-                  <span class="text-gray-500">Currency</span>
-                  <span class="text-white">ETH</span>
-                </div>
-                <div class="h-px bg-gray-800/50"></div>
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-                  <span class="text-gray-500">Explorer</span>
-                  <span class="text-white">https://etherscan.io</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex gap-4 setup-step">
-            <div class="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span class="text-accent font-mono text-sm font-bold">3</span>
-            </div>
-            <p class="font-medium text-gray-200">Click Save — you're protected!</p>
-          </div>
-        </div>
-
-        <div class="flex flex-col sm:flex-row gap-4 mb-6">
-          <button id="setup-add-metamask" class="btn-primary px-6 py-3">
-            Or Click Here to Add Automatically
-          </button>
-        </div>
-
-        <div class="p-4 rounded-xl bg-teal/5 border border-teal/10">
-          <p class="text-sm text-gray-400">
-            <span class="text-teal font-medium">Other wallets:</span>
-            Rabby, Frame, Rainbow, Trust Wallet — any wallet that supports custom RPC endpoints. Same settings.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== DASHBOARD ===== -->
-  <section id="dashboard" class="relative py-24 md:py-32">
-    <div class="max-w-4xl mx-auto px-6">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl md:text-5xl font-bold mb-4 section-reveal">Your Dashboard</h2>
-        <p class="text-gray-400 text-lg section-reveal">Connect your wallet to view earnings and referrals.</p>
-      </div>
-
-      <!-- Not connected -->
-      <div id="dashboard-connect" class="glass-card rounded-2xl p-12 text-center">
-        <div class="w-16 h-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-6">
-          <svg class="w-8 h-8 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 013 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 013 6v3"/>
-          </svg>
-        </div>
-        <h3 class="text-xl font-bold mb-3">Connect Your Wallet</h3>
-        <p class="text-gray-400 mb-6 max-w-md mx-auto">View your MEV rebates, protected transactions, and referral earnings.</p>
-        <button id="dashboard-connect-btn" class="btn-primary px-8 py-3">Connect Wallet</button>
-      </div>
-
-      <!-- Connected (hidden by default) -->
-      <div id="dashboard-content" class="hidden space-y-6">
-        <div class="glass-card rounded-2xl p-6 md:p-8">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full bg-accent"></div>
-              <span id="dashboard-address" class="font-mono text-sm text-gray-400">0x...</span>
-            </div>
-            <button id="dashboard-disconnect" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">Disconnect</button>
-          </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div class="bg-dark rounded-xl p-4 border border-gray-800/50">
-              <div class="text-xl md:text-2xl font-bold font-mono text-accent" id="dash-earned">0 ETH</div>
-              <div class="text-xs text-gray-500 mt-1">Total Earned</div>
-            </div>
-            <div class="bg-dark rounded-xl p-4 border border-gray-800/50">
-              <div class="text-xl md:text-2xl font-bold font-mono text-white" id="dash-txs">0</div>
-              <div class="text-xs text-gray-500 mt-1">Txs Protected</div>
-            </div>
-            <div class="bg-dark rounded-xl p-4 border border-gray-800/50">
-              <div class="text-xl md:text-2xl font-bold font-mono text-accent" id="dash-referral-earned">0 ETH</div>
-              <div class="text-xs text-gray-500 mt-1">Referral Earnings</div>
-            </div>
-            <div class="bg-dark rounded-xl p-4 border border-gray-800/50">
-              <div class="text-xl md:text-2xl font-bold font-mono text-white" id="dash-referrals">0</div>
-              <div class="text-xs text-gray-500 mt-1">Users Referred</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="glass-card rounded-2xl p-6">
-          <h3 class="font-bold mb-4">Your Referral Link</h3>
-          <div class="flex items-center gap-2">
-            <code id="dash-referral-link" class="flex-1 bg-dark rounded-lg px-4 py-3 text-accent font-mono text-sm truncate border border-gray-800/50"></code>
-            <button id="dash-copy-referral" class="btn-secondary px-4 py-3 text-sm flex-shrink-0">Copy</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="border-t border-gray-800/30 py-12 mt-12">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-8">
-        <a href="#" class="flex items-center gap-2 text-lg font-bold">
-          <svg class="w-6 h-6" viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="14" stroke="#00ff88" stroke-width="2" fill="none"/>
-            <path d="M16 6 L22 14 L16 26 L10 14 Z" fill="#00ff88" opacity="0.3"/>
-            <path d="M16 8 L20 14 L16 24 L12 14 Z" stroke="#00ff88" stroke-width="1.5" fill="none"/>
-          </svg>
-          Reclaim
-        </a>
-
-        <div class="flex items-center gap-6 text-sm text-gray-500">
-          <a href="/docs.html" class="hover:text-accent transition-colors">Docs</a>
-          <a href="https://github.com/reclaim-fi" class="hover:text-accent transition-colors flex items-center gap-1.5" target="_blank" rel="noopener">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-            GitHub
-          </a>
-          <a href="#" class="hover:text-accent transition-colors">Twitter</a>
-          <a href="#" class="hover:text-accent transition-colors">Telegram</a>
-          <a href="#" class="hover:text-accent transition-colors">Discord</a>
-        </div>
-
-        <div class="text-sm text-gray-600 text-center md:text-right">
-          <p>Open source &middot; No tracking &middot; Fully verifiable</p>
-          <p class="mt-1">Built on <a href="https://docs.flashbots.net/flashbots-protect/overview" class="text-gray-500 hover:text-accent transition-colors" target="_blank" rel="noopener">Flashbots Protect</a></p>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <script type="module" src="/src/main.js"></script>
+async function addMM(){if(!window.ethereum){window.open('https://metamask.io/download/','_blank');return}try{await ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:'0x1',chainName:'Ethereum (Reclaim Protected)',nativeCurrency:{name:'Ether',symbol:'ETH',decimals:18},rpcUrls:['https://rpc.reclaimfi.xyz'],blockExplorerUrls:['https://etherscan.io']}]})}catch(e){console.error(e)}}
+function cpR(b){navigator.clipboard.writeText('https://rpc.reclaimfi.xyz');b.textContent='Copied!';b.style.background='var(--ac)';b.style.color='var(--bg2)';b.style.borderColor='var(--ac)';setTimeout(()=>{b.textContent='Copy';b.style.background='';b.style.color='';b.style.borderColor=''},2000)}
+</script>
 </body>
 </html>
