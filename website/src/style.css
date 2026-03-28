@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Base ---- */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+::selection {
+  background: rgba(0, 255, 136, 0.2);
+  color: #fff;
+}
+
+/* ---- Lenis ---- */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+/* ---- Gradient Text ---- */
+.text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #00ff88 50%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Glass Card ---- */
+.glass-card {
+  background: rgba(26, 27, 35, 0.55);
+  border: 1px solid rgba(42, 43, 51, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: border-color 0.3s, background 0.3s, transform 0.3s;
+}
+.glass-card:hover {
+  border-color: rgba(0, 255, 136, 0.12);
+  background: rgba(26, 27, 35, 0.75);
+}
+
+/* ---- Buttons ---- */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  background: #00ff88;
+  color: #0a0b0f;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 0 20px rgba(0, 255, 136, 0.15),
+    0 0 60px rgba(0, 255, 136, 0.05);
+}
+.btn-primary:hover {
+  box-shadow:
+    0 0 30px rgba(0, 255, 136, 0.3),
+    0 0 80px rgba(0, 255, 136, 0.1);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(0, 255, 136, 0.25);
+  color: #00ff88;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  background: rgba(0, 255, 136, 0.05);
+  border-color: rgba(0, 255, 136, 0.5);
+}
+
+/* ---- Navbar ---- */
+.nav-scrolled {
+  background: rgba(10, 11, 15, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(42, 43, 51, 0.5) !important;
+}
+
+/* ---- Canvas ---- */
+#shield-canvas {
+  pointer-events: none;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0b0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2b33;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3b43;
+}
+
+/* ---- Copy feedback ---- */
+.copy-btn.copied svg {
+  color: #00ff88;
+}
